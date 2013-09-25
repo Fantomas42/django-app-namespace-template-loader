@@ -1,6 +1,6 @@
-=============================================
-Django Namespaced Application Template Loader
-=============================================
+====================================
+Django App Namespace Template Loader
+====================================
 
 Provides a template loader that allows you to load a template from a
 specific application. This allows you to both **extend** and **override** a
