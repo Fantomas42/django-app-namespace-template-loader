@@ -1,2 +1,6 @@
 """Template loader for app-namespace"""
-# TODO
+from django.template.loader import BaseLoader
+
+
+class Loader(BaseLoader):
+    pass
