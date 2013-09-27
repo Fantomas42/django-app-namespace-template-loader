@@ -1,0 +1,9 @@
+[run]
+source		= app_namespace
+omit		= app_namespace/tests.py
+                  app_namespace/testsettings.py
+
+[report]
+exclude_lines	=
+    pragma: no cover
+show_missing    = True
