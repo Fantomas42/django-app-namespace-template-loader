@@ -1,8 +1,9 @@
 """Tests for app_namespace"""
 from django.test import TestCase
 from django.template.base import Context
-from django.template.loaders import app_directories
+from django.template.base import Template
 from django.template.base import TemplateDoesNotExist
+from django.template.loaders import app_directories
 
 from app_namespace import Loader
 
@@ -38,4 +39,12 @@ class LoaderTestCase(TestCase):
                           'unavailable-template')
 
     def test_extend_and_override(self):
-        pass
+        template_namespace = Template(
+            '{% extends "admin:admin/base.html" %}'
+            '{% block title %}APP NAMESPACE{% endblock %}'
+            )
+
+        context = Context({})
+        self.assertEquals(
+            template_namespace.render(context),
+            '')
