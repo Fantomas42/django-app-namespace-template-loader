@@ -31,12 +31,22 @@ class LoaderTestCase(TestCase):
         template_namespace = app_namespace_loader.load_template_source(
             'admin:admin/base.html')
         self.assertEquals(template_directory[0], template_namespace[0])
-        self.assertEquals(template_namespace[1],
-                          'namespace:admin:admin/base.html')
+        self.assertTrue('app_namespace:admin:' in template_namespace[1])
+        self.assertTrue('admin/base.html' in template_namespace[1])
 
         self.assertRaises(TemplateDoesNotExist,
                           app_namespace_loader.load_template_source,
                           'unavailable-template')
+
+    def test_dotted_namespace(self):
+        app_namespace_loader = Loader()
+
+        template_short = app_namespace_loader.load_template_source(
+            'admin:admin/base.html')
+        template_dotted = app_namespace_loader.load_template_source(
+            'django.contrib.admin:admin/base.html')
+
+        self.assertEquals(template_short[0], template_dotted[0])
 
     def test_extend_and_override(self):
         template_directory = Template(
