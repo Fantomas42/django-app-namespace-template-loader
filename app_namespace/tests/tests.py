@@ -39,12 +39,28 @@ class LoaderTestCase(TestCase):
                           'unavailable-template')
 
     def test_extend_and_override(self):
+        template_directory = Template(
+            '{% extends "admin/base_site.html" %}'
+            '{% block title %}APP NAMESPACE{% endblock %}'
+            )
         template_namespace = Template(
-            '{% extends "admin:admin/base.html" %}'
+            '{% extends "admin:admin/base_site.html" %}'
             '{% block title %}APP NAMESPACE{% endblock %}'
             )
 
         context = Context({})
+        self.assertNotEquals(
+            template_directory.render(context),
+            template_namespace.render(context))
+
+        template_directory = Template(
+            '{% extends "admin/base_site.html" %}'
+            '{% block title %}APP NAMESPACE{% endblock %}'
+            '{% block branding %}'
+            '<h1 id="site-name">{{ site_header }}</h1>'
+            '{% endblock %}'
+            '{% block nav-global %}{% endblock %}'
+            )
         self.assertEquals(
-            template_namespace.render(context),
-            '')
+            template_directory.render(context),
+            template_namespace.render(context))

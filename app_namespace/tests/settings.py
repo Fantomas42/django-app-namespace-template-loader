@@ -9,7 +9,7 @@ TEMPLATE_LOADERS = [
     'django.template.loaders.app_directories.Loader',
 ]
 
-ROOT_URLCONF = 'app_namespace.testurls'
+ROOT_URLCONF = 'app_namespace.tests.urls'
 
 INSTALLED_APPS = ('django.contrib.auth',
                   'django.contrib.admin',
