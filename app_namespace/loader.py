@@ -50,12 +50,8 @@ class Loader(BaseLoader):
         try:
             app, template_path = template_name.split(':')
 
-            try:
-                file_path = safe_join(self.app_templates_dirs[app],
-                                      template_path)
-            except UnicodeDecodeError:
-                raise
-
+            file_path = safe_join(self.app_templates_dirs[app],
+                                  template_path)
             with open(file_path, 'rb') as fp:
                 return (fp.read().decode(settings.FILE_CHARSET),
                         'app_namespace:%s:%s' % (app, file_path))
