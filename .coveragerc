@@ -1,7 +1,6 @@
 [run]
 source		= app_namespace
-omit		= app_namespace/tests.py
-                  app_namespace/testsettings.py
+omit		= app_namespace/tests/*
 
 [report]
 exclude_lines	=
