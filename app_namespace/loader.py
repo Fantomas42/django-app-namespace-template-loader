@@ -14,15 +14,17 @@ from django.core.exceptions import ImproperlyConfigured
 
 class Loader(BaseLoader):
     """
-    App namespace loader for allowing you to both
-    extend and override a template provided by an app
-    at the same time.
+    App namespace loader for allowing you to both extend and override
+    a template provided by an app at the same time.
     """
     is_usable = True
-    app_templates = {}
 
     @cached_property
     def app_templates_dirs(self):
+        """
+        Build a cached dict with settings.INSTALLED_APPS as keys
+        and the 'templates' directory of each application as values.
+        """
         app_templates_dirs = {}
         for app in settings.INSTALLED_APPS:
             if not six.PY3:
@@ -30,9 +32,10 @@ class Loader(BaseLoader):
                                sys.getdefaultencoding())
             try:
                 mod = import_module(app)
-            except ImportError as e:
-                raise ImproperlyConfigured('ImportError %s: %s' %
-                                           (app, e.args[0]))
+            except ImportError as e:         # pragma: no cover
+                raise ImproperlyConfigured(  # pragma: no cover
+                    'ImportError %s: %s' % (
+                        app, e.args[0]))
             templates_dir = os.path.join(os.path.dirname(mod.__file__),
                                          'templates')
             if os.path.isdir(templates_dir):
@@ -45,18 +48,19 @@ class Loader(BaseLoader):
         return app_templates_dirs
 
     def load_template_source(self, template_name, template_dirs=None):
+        """
+        Try to load 'template_name' splitted with ':'. The first item
+        is the name of the application and the last item is the true
+        value of 'template_name' provided by the specified application.
+        """
         if not ':' in template_name:
             raise TemplateDoesNotExist(template_name)
 
         try:
             app, template_path = template_name.split(':')
 
-            try:
-                file_path = safe_join(self.app_templates_dirs[app],
-                                      template_path)
-            except UnicodeDecodeError:
-                raise
-
+            file_path = safe_join(self.app_templates_dirs[app],
+                                  template_path)
             with open(file_path, 'rb') as fp:
                 return (fp.read().decode(settings.FILE_CHARSET),
                         'app_namespace:%s:%s' % (app, file_path))

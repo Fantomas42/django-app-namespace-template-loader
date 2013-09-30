@@ -36,7 +36,10 @@ class LoaderTestCase(TestCase):
 
         self.assertRaises(TemplateDoesNotExist,
                           app_namespace_loader.load_template_source,
-                          'unavailable-template')
+                          'no-namespace-template')
+        self.assertRaises(TemplateDoesNotExist,
+                          app_namespace_loader.load_template_source,
+                          'no.app.namespace:template')
 
     def test_dotted_namespace(self):
         app_namespace_loader = Loader()
