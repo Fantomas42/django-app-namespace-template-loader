@@ -14,14 +14,17 @@ from django.core.exceptions import ImproperlyConfigured
 
 class Loader(BaseLoader):
     """
-    App namespace loader for allowing you to both
-    extend and override a template provided by an app
-    at the same time.
+    App namespace loader for allowing you to both extend and override
+    a template provided by an app at the same time.
     """
     is_usable = True
 
     @cached_property
     def app_templates_dirs(self):
+        """
+        Build a cached dict with settings.INSTALLED_APPS as keys
+        and the 'templates' directory of each application as values.
+        """
         app_templates_dirs = {}
         for app in settings.INSTALLED_APPS:
             if not six.PY3:
@@ -45,6 +48,11 @@ class Loader(BaseLoader):
         return app_templates_dirs
 
     def load_template_source(self, template_name, template_dirs=None):
+        """
+        Try to load 'template_name' splitted with ':'. The first item
+        is the name of the application and the last item is the true
+        value of 'template_name' provided by the specified application.
+        """
         if not ':' in template_name:
             raise TemplateDoesNotExist(template_name)
 
