@@ -14,9 +14,18 @@ to override, even if you only want to override one small block.
 Template usage example (extend and override the title block of Django admin
 base template): ::
 
+    $ cat my-project/templates/admin/base_site.html
     {% extends "admin:admin/base_site.html" %}
 
-    {% block title %}{{ title }} - My Web Project{% endblock %}
+    {% block title %}{{ title }} - My Project{% endblock %}
+
+Simply add this line into the ``TEMPLATE_LOADERS`` setting of your project to
+benefit this feature once the module installed. ::
+
+    TEMPLATE_LOADERS = [
+      'app_namespace.Loader',
+      ... # Others template loader
+    ]
 
 Based on: http://djangosnippets.org/snippets/1376/
 
