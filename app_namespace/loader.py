@@ -29,9 +29,10 @@ class Loader(BaseLoader):
                                sys.getdefaultencoding())
             try:
                 mod = import_module(app)
-            except ImportError as e:
-                raise ImproperlyConfigured('ImportError %s: %s' %
-                                           (app, e.args[0]))
+            except ImportError as e:         # pragma: no cover
+                raise ImproperlyConfigured(  # pragma: no cover
+                    'ImportError %s: %s' % (
+                        app, e.args[0]))
             templates_dir = os.path.join(os.path.dirname(mod.__file__),
                                          'templates')
             if os.path.isdir(templates_dir):
