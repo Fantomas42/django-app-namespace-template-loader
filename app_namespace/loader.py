@@ -19,7 +19,6 @@ class Loader(BaseLoader):
     at the same time.
     """
     is_usable = True
-    app_templates = {}
 
     @cached_property
     def app_templates_dirs(self):
