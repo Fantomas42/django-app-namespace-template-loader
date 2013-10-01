@@ -1,0 +1,8 @@
+[run]
+source		= app_namespace
+omit		= app_namespace/tests/*
+
+[report]
+exclude_lines	=
+    pragma: no cover
+show_missing    = True
