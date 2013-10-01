@@ -29,6 +29,10 @@ benefit this feature once the module installed. ::
 
 Based on: http://djangosnippets.org/snippets/1376/
 
+Requires: Django >= 1.4
+
+Tested with Python 2.6, 2.7, 3.2, 3.3.
+
 .. |travis-develop| image:: https://travis-ci.org/Fantomas42/django-app-namespace-template-loader.png?branch=develop
    :alt: Build Status - develop branch
    :target: http://travis-ci.org/Fantomas42/django-app-namespace-template-loader
