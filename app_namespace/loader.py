@@ -2,7 +2,8 @@
 import os
 import sys
 
-from django.utils import six
+import six
+
 from django.conf import settings
 from django.utils._os import safe_join
 from django.template.loader import BaseLoader
