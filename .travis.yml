@@ -21,6 +21,6 @@ install:
 before_script:
     - ./bin/flake8 app_namespace
 script:
-    - ./bin/cover
+    - ./bin/test-and-cover
 after_success:
     - ./bin/coveralls
