@@ -13,9 +13,11 @@ from django.template.base import TemplateDoesNotExist
 from django.core.exceptions import ImproperlyConfigured
 
 try:
+    # Requires Python 2.7.
     from collections import OrderedDict
 except ImportError:
-    from django.utils.datastructures import OrderedDict
+    # Deprecated in Django 1.9.
+    from django.utils.datastructures import SortedDict as OrderedDict
 
 
 class Loader(BaseLoader):
