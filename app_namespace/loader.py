@@ -12,6 +12,10 @@ from django.utils.functional import cached_property
 from django.template.base import TemplateDoesNotExist
 from django.core.exceptions import ImproperlyConfigured
 
+try:
+    from collections import OrderedDict
+except ImportError:
+    from django.utils.datastructures import OrderedDict
 
 class Loader(BaseLoader):
     """
@@ -26,7 +30,7 @@ class Loader(BaseLoader):
         Build a cached dict with settings.INSTALLED_APPS as keys
         and the 'templates' directory of each application as values.
         """
-        app_templates_dirs = {}
+        app_templates_dirs = OrderedDict()
         for app in settings.INSTALLED_APPS:
             if not six.PY3:
                 fs_encoding = (sys.getfilesystemencoding() or
@@ -57,9 +61,24 @@ class Loader(BaseLoader):
         if not ':' in template_name:
             raise TemplateDoesNotExist(template_name)
 
-        try:
-            app, template_path = template_name.split(':')
+        app, template_path = template_name.split(':')
 
+        if app == '':
+            for app in self.app_templates_dirs:
+                try:
+                    return self.load_template_source_inner(
+                        template_name, app, template_path
+                    )
+                except TemplateDoesNotExist:
+                    pass
+            raise TemplateDoesNotExist(template_name)
+        else:
+            return self.load_template_source_inner(
+                template_name, app, template_path)
+
+
+    def load_template_source_inner(self, template_name, app, template_path):
+        try:
             file_path = safe_join(self.app_templates_dirs[app],
                                   template_path)
             with open(file_path, 'rb') as fp:

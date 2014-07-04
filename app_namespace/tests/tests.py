@@ -89,3 +89,21 @@ class LoaderTestCase(TestCase):
 
         self.assertHTMLEqual(template_directory, template_namespace)
         self.assertTrue(mark in template_directory)
+
+
+    def test_extend_default(self):
+        """
+        Test that a ":" prefix (empty namespace) gets handled.
+        """
+        self.maxDiff = None
+        context = Context({})
+        mark = '<h1 id="site-name">Django administration</h1>'
+        mark_title = '<title>APP NAMESPACE</title>'
+
+        template_namespace = Template(
+            '{% extends ":admin/base_site.html" %}'
+            '{% block title %}APP NAMESPACE{% endblock %}'
+            ).render(context)
+
+        self.assertTrue(mark_title in template_namespace)
+        self.assertTrue(mark in template_namespace)
