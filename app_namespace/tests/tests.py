@@ -62,6 +62,7 @@ class LoaderTestCase(TestCase):
         self.maxDiff = None
         context = Context({})
         mark = '<h1 id="site-name">Django administration</h1>'
+        mark_title = '<title>APP NAMESPACE</title>'
 
         template_directory = Template(
             '{% extends "admin/base.html" %}'
@@ -74,8 +75,10 @@ class LoaderTestCase(TestCase):
             ).render(context)
 
         self.assertHTMLNotEqual(template_directory, template_namespace)
-        self.assertTrue(mark in template_namespace)
+        self.assertTrue(mark_title in template_directory)
+        self.assertTrue(mark_title in template_namespace)
         self.assertTrue(mark not in template_directory)
+        self.assertTrue(mark in template_namespace)
 
         template_directory = Template(
             '{% extends "admin/base.html" %}'
