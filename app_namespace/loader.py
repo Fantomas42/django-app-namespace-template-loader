@@ -17,6 +17,7 @@ try:
 except ImportError:
     from django.utils.datastructures import OrderedDict
 
+
 class Loader(BaseLoader):
     """
     App namespace loader for allowing you to both extend and override
@@ -75,7 +76,6 @@ class Loader(BaseLoader):
         else:
             return self.load_template_source_inner(
                 template_name, app, template_path)
-
 
     def load_template_source_inner(self, template_name, app, template_path):
         try:

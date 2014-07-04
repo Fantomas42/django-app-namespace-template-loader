@@ -93,7 +93,6 @@ class LoaderTestCase(TestCase):
         self.assertHTMLEqual(template_directory, template_namespace)
         self.assertTrue(mark in template_directory)
 
-
     def test_extend_default(self):
         """
         Test that a ":" prefix (empty namespace) gets handled.
