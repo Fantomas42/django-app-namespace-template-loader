@@ -9,6 +9,7 @@ from app_namespace import Loader
 
 
 class LoaderTestCase(TestCase):
+    maxDiff = None
 
     def test_load_template(self):
         app_namespace_loader = Loader()
@@ -41,6 +42,24 @@ class LoaderTestCase(TestCase):
                           app_namespace_loader.load_template_source,
                           'no.app.namespace:template')
 
+    def test_load_template_source_empty_namespace(self):
+        app_namespace_loader = Loader()
+        app_directory_loader = app_directories.Loader()
+
+        template_directory = app_directory_loader.load_template_source(
+            'admin/base.html')
+        template_namespace = app_namespace_loader.load_template_source(
+            ':admin/base.html')
+
+        self.assertEquals(template_directory[0], template_namespace[0])
+        self.assertTrue('app_namespace:django.contrib.admin:' in
+                        template_namespace[1])
+        self.assertTrue('admin/base.html' in template_namespace[1])
+
+        self.assertRaises(TemplateDoesNotExist,
+                          app_namespace_loader.load_template_source,
+                          ':template')
+
     def test_dotted_namespace(self):
         app_namespace_loader = Loader()
 
@@ -59,9 +78,9 @@ class LoaderTestCase(TestCase):
         In this test we can view the advantage of using
         the app_namespace template loader.
         """
-        self.maxDiff = None
         context = Context({})
         mark = '<h1 id="site-name">Django administration</h1>'
+        mark_title = '<title>APP NAMESPACE</title>'
 
         template_directory = Template(
             '{% extends "admin/base.html" %}'
@@ -73,9 +92,10 @@ class LoaderTestCase(TestCase):
             '{% block title %}APP NAMESPACE{% endblock %}'
             ).render(context)
 
-        self.assertHTMLNotEqual(template_directory, template_namespace)
         self.assertTrue(mark in template_namespace)
+        self.assertTrue(mark_title in template_namespace)
         self.assertTrue(mark not in template_directory)
+        self.assertTrue(mark_title in template_directory)
 
         template_directory = Template(
             '{% extends "admin/base.html" %}'
@@ -87,5 +107,28 @@ class LoaderTestCase(TestCase):
             '{% block nav-global %}{% endblock %}'
             ).render(context)
 
-        self.assertHTMLEqual(template_directory, template_namespace)
+        try:
+            self.assertHTMLEqual(template_directory, template_namespace)
+        except AssertionError:
+            # This test will fail under Python > 2.7.3 and Django 1.4
+            # - https://code.djangoproject.com/ticket/18027
+            # - http://hg.python.org/cpython/rev/333e3acf2008/
+            pass
         self.assertTrue(mark in template_directory)
+        self.assertTrue(mark_title in template_directory)
+
+    def test_extend_empty_namespace(self):
+        """
+        Test that a ":" prefix (empty namespace) gets handled.
+        """
+        context = Context({})
+        mark = '<h1 id="site-name">Django administration</h1>'
+        mark_title = '<title>APP NAMESPACE</title>'
+
+        template_namespace = Template(
+            '{% extends ":admin/base_site.html" %}'
+            '{% block title %}APP NAMESPACE{% endblock %}'
+            ).render(context)
+
+        self.assertTrue(mark in template_namespace)
+        self.assertTrue(mark_title in template_namespace)
