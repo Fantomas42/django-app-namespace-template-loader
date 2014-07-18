@@ -11,13 +11,7 @@ from django.utils.importlib import import_module
 from django.utils.functional import cached_property
 from django.template.base import TemplateDoesNotExist
 from django.core.exceptions import ImproperlyConfigured
-
-try:
-    # Requires Python 2.7.
-    from collections import OrderedDict
-except ImportError:
-    # Deprecated in Django 1.9.
-    from django.utils.datastructures import SortedDict as OrderedDict
+from django.utils.datastructures import SortedDict  # Deprecated in Django 1.9
 
 
 class Loader(BaseLoader):
@@ -33,7 +27,7 @@ class Loader(BaseLoader):
         Build a cached dict with settings.INSTALLED_APPS as keys
         and the 'templates' directory of each application as values.
         """
-        app_templates_dirs = OrderedDict()
+        app_templates_dirs = SortedDict()
         for app in settings.INSTALLED_APPS:
             if not six.PY3:
                 fs_encoding = (sys.getfilesystemencoding() or
