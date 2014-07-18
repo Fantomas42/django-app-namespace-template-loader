@@ -11,7 +11,7 @@ template at the same time.
 The default Django loaders require you to copy the entire template you want
 to override, even if you only want to override one small block.
 
-This is this issue that the package try to resolve.
+This is the issue that this package tries to resolve.
 
 Examples:
 ---------
@@ -30,19 +30,18 @@ Shorter example: ::
 
     {% block title %}{{ title }} - My Project{% endblock %}
 
-If we did not specify the application namespace, the first matching
-template will be used. Usefull when several applications provide the same
-templates.
+If we do not specify the application namespace, the first matching template
+will be used. This is useful when several applications provide the same
+template.
 
 Installation
 ------------
 
-Simply add this line into the ``TEMPLATE_LOADERS`` setting of your project to
-benefit this feature once the module installed. ::
+Add `app_namespace.Loader` to the ``TEMPLATE_LOADERS`` setting of your project. ::
 
     TEMPLATE_LOADERS = [
       'app_namespace.Loader',
-      ... # Others template loader
+      ... # Other template loaders
     ]
 
 Notes
