@@ -11,13 +11,31 @@ template at the same time.
 The default Django loaders require you to copy the entire template you want
 to override, even if you only want to override one small block.
 
-Template usage example (extend and override the title block of Django admin
-base template): ::
+This is this issue that the package try to resolve.
+
+Examples:
+---------
+
+Extend and override the title block of Django admin base template: ::
 
     $ cat my-project/templates/admin/base_site.html
     {% extends "admin:admin/base_site.html" %}
 
     {% block title %}{{ title }} - My Project{% endblock %}
+
+Shorter example: ::
+
+    $ cat my-project/templates/admin/base_site.html
+    {% extends ":admin/base_site.html" %}
+
+    {% block title %}{{ title }} - My Project{% endblock %}
+
+If we did not specify the application namespace, the first matching
+template will be used. Usefull when several applications provide the same
+templates.
+
+Installation
+------------
 
 Simply add this line into the ``TEMPLATE_LOADERS`` setting of your project to
 benefit this feature once the module installed. ::
@@ -26,6 +44,9 @@ benefit this feature once the module installed. ::
       'app_namespace.Loader',
       ... # Others template loader
     ]
+
+Notes
+-----
 
 Based on: http://djangosnippets.org/snippets/1376/
 
