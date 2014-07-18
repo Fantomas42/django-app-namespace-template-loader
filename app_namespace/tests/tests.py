@@ -42,6 +42,20 @@ class LoaderTestCase(TestCase):
                           app_namespace_loader.load_template_source,
                           'no.app.namespace:template')
 
+    def test_load_template_source_empty_namespace(self):
+        app_namespace_loader = Loader()
+        app_directory_loader = app_directories.Loader()
+
+        template_directory = app_directory_loader.load_template_source(
+            'admin/base.html')
+        template_namespace = app_namespace_loader.load_template_source(
+            ':admin/base.html')
+
+        self.assertEquals(template_directory[0], template_namespace[0])
+        self.assertTrue('app_namespace:django.contrib.admin:' in
+                        template_namespace[1])
+        self.assertTrue('admin/base.html' in template_namespace[1])
+
     def test_dotted_namespace(self):
         app_namespace_loader = Loader()
 
@@ -94,7 +108,7 @@ class LoaderTestCase(TestCase):
         self.assertTrue(mark in template_directory)
         self.assertTrue(mark_title in template_directory)
 
-    def test_extend_default(self):
+    def test_extend_empty_namespace(self):
         """
         Test that a ":" prefix (empty namespace) gets handled.
         """
@@ -107,5 +121,5 @@ class LoaderTestCase(TestCase):
             '{% block title %}APP NAMESPACE{% endblock %}'
             ).render(context)
 
-        self.assertTrue(mark_title in template_namespace)
         self.assertTrue(mark in template_namespace)
+        self.assertTrue(mark_title in template_namespace)
