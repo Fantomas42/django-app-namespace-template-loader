@@ -75,10 +75,10 @@ class LoaderTestCase(TestCase):
             ).render(context)
 
         self.assertHTMLNotEqual(template_directory, template_namespace)
-        self.assertTrue(mark_title in template_directory)
+        self.assertTrue(mark in template_namespace)
         self.assertTrue(mark_title in template_namespace)
         self.assertTrue(mark not in template_directory)
-        self.assertTrue(mark in template_namespace)
+        self.assertTrue(mark_title in template_directory)
 
         template_directory = Template(
             '{% extends "admin/base.html" %}'
@@ -92,6 +92,7 @@ class LoaderTestCase(TestCase):
 
         self.assertHTMLEqual(template_directory, template_namespace)
         self.assertTrue(mark in template_directory)
+        self.assertTrue(mark_title in template_directory)
 
     def test_extend_default(self):
         """
