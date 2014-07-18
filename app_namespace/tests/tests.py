@@ -9,6 +9,7 @@ from app_namespace import Loader
 
 
 class LoaderTestCase(TestCase):
+    maxDiff = None
 
     def test_load_template(self):
         app_namespace_loader = Loader()
@@ -59,7 +60,6 @@ class LoaderTestCase(TestCase):
         In this test we can view the advantage of using
         the app_namespace template loader.
         """
-        self.maxDiff = None
         context = Context({})
         mark = '<h1 id="site-name">Django administration</h1>'
         mark_title = '<title>APP NAMESPACE</title>'
@@ -97,7 +97,6 @@ class LoaderTestCase(TestCase):
         """
         Test that a ":" prefix (empty namespace) gets handled.
         """
-        self.maxDiff = None
         context = Context({})
         mark = '<h1 id="site-name">Django administration</h1>'
         mark_title = '<title>APP NAMESPACE</title>'
