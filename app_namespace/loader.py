@@ -64,8 +64,7 @@ class Loader(BaseLoader):
             for app in self.app_templates_dirs:
                 try:
                     return self.load_template_source_inner(
-                        template_name, app, template_path
-                    )
+                        template_name, app, template_path)
                 except TemplateDoesNotExist:
                     pass
             raise TemplateDoesNotExist(template_name)

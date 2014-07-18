@@ -56,6 +56,10 @@ class LoaderTestCase(TestCase):
                         template_namespace[1])
         self.assertTrue('admin/base.html' in template_namespace[1])
 
+        self.assertRaises(TemplateDoesNotExist,
+                          app_namespace_loader.load_template_source,
+                          ':template')
+
     def test_dotted_namespace(self):
         app_namespace_loader = Loader()
 
