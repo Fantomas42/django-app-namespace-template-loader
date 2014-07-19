@@ -55,7 +55,7 @@ class Loader(BaseLoader):
         is the name of the application and the last item is the true
         value of 'template_name' provided by the specified application.
         """
-        if not ':' in template_name:
+        if ':' not in template_name:
             raise TemplateDoesNotExist(template_name)
 
         app, template_path = template_name.split(':')
