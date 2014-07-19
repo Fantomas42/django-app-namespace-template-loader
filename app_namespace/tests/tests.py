@@ -132,3 +132,27 @@ class LoaderTestCase(TestCase):
 
         self.assertTrue(mark in template_namespace)
         self.assertTrue(mark_title in template_namespace)
+
+    def test_extend_with_super(self):
+        """
+        Here we simulate the existence of a template
+        named admin/base_site.html on the filesystem
+        overriding the title markup of the template
+        with a {{ super }}.
+        """
+        context = Context({})
+        mark_ok = '<title> | Django site admin - APP NAMESPACE</title>'
+        mark_ko = '<title> - APP NAMESPACE</title>'
+
+        template_directory = Template(
+            '{% extends "admin/base.html" %}'
+            '{% block title %}{{ block.super }} - APP NAMESPACE{% endblock %}'
+            ).render(context)
+
+        template_namespace = Template(
+            '{% extends "admin:admin/base_site.html" %}'
+            '{% block title %}{{ block.super }} - APP NAMESPACE{% endblock %}'
+            ).render(context)
+
+        self.assertTrue(mark_ok in template_namespace)
+        self.assertTrue(mark_ko in template_directory)
