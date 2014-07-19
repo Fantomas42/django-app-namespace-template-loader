@@ -9,7 +9,6 @@ from app_namespace import Loader
 
 
 class LoaderTestCase(TestCase):
-    maxDiff = None
 
     def test_load_template(self):
         app_namespace_loader = Loader()
@@ -60,7 +59,7 @@ class LoaderTestCase(TestCase):
                           app_namespace_loader.load_template_source,
                           ':template')
 
-    def test_dotted_namespace(self):
+    def test_load_template_source_dotted_namespace(self):
         app_namespace_loader = Loader()
 
         template_short = app_namespace_loader.load_template_source(
@@ -69,6 +68,10 @@ class LoaderTestCase(TestCase):
             'django.contrib.admin:admin/base.html')
 
         self.assertEquals(template_short[0], template_dotted[0])
+
+
+class TemplateTestCase(TestCase):
+    maxDiff = None
 
     def test_extend_and_override(self):
         """
