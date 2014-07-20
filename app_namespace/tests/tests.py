@@ -9,7 +9,6 @@ from app_namespace import Loader
 
 
 class LoaderTestCase(TestCase):
-    maxDiff = None
 
     def test_load_template(self):
         app_namespace_loader = Loader()
@@ -60,7 +59,7 @@ class LoaderTestCase(TestCase):
                           app_namespace_loader.load_template_source,
                           ':template')
 
-    def test_dotted_namespace(self):
+    def test_load_template_source_dotted_namespace(self):
         app_namespace_loader = Loader()
 
         template_short = app_namespace_loader.load_template_source(
@@ -69,6 +68,10 @@ class LoaderTestCase(TestCase):
             'django.contrib.admin:admin/base.html')
 
         self.assertEquals(template_short[0], template_dotted[0])
+
+
+class TemplateTestCase(TestCase):
+    maxDiff = None
 
     def test_extend_and_override(self):
         """
@@ -132,3 +135,27 @@ class LoaderTestCase(TestCase):
 
         self.assertTrue(mark in template_namespace)
         self.assertTrue(mark_title in template_namespace)
+
+    def test_extend_with_super(self):
+        """
+        Here we simulate the existence of a template
+        named admin/base_site.html on the filesystem
+        overriding the title markup of the template
+        with a {{ super }}.
+        """
+        context = Context({})
+        mark_ok = '<title> | Django site admin - APP NAMESPACE</title>'
+        mark_ko = '<title> - APP NAMESPACE</title>'
+
+        template_directory = Template(
+            '{% extends "admin/base.html" %}'
+            '{% block title %}{{ block.super }} - APP NAMESPACE{% endblock %}'
+            ).render(context)
+
+        template_namespace = Template(
+            '{% extends "admin:admin/base_site.html" %}'
+            '{% block title %}{{ block.super }} - APP NAMESPACE{% endblock %}'
+            ).render(context)
+
+        self.assertTrue(mark_ok in template_namespace)
+        self.assertTrue(mark_ko in template_directory)
