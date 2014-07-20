@@ -40,7 +40,7 @@ class Loader(BaseLoader):
             templates_dir = os.path.join(os.path.dirname(mod.__file__),
                                          'templates')
             if os.path.isdir(templates_dir):
-                if not six.PY3:
+                if six.PY2:
                     templates_dir = templates_dir.decode(FS_ENCODING)
                 app_templates_dirs[app] = templates_dir
                 if '.' in app:
