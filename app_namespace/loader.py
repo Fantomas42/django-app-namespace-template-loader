@@ -13,6 +13,8 @@ from django.template.base import TemplateDoesNotExist
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.datastructures import SortedDict  # Deprecated in Django 1.9
 
+FS_ENCODING = sys.getfilesystemencoding() or sys.getdefaultencoding()
+
 
 class Loader(BaseLoader):
     """
@@ -29,9 +31,6 @@ class Loader(BaseLoader):
         """
         app_templates_dirs = SortedDict()
         for app in settings.INSTALLED_APPS:
-            if not six.PY3:
-                fs_encoding = (sys.getfilesystemencoding() or
-                               sys.getdefaultencoding())
             try:
                 mod = import_module(app)
             except ImportError as e:         # pragma: no cover
@@ -41,8 +40,8 @@ class Loader(BaseLoader):
             templates_dir = os.path.join(os.path.dirname(mod.__file__),
                                          'templates')
             if os.path.isdir(templates_dir):
-                if not six.PY3:
-                    templates_dir = templates_dir.decode(fs_encoding)
+                if six.PY2:
+                    templates_dir = templates_dir.decode(FS_ENCODING)
                 app_templates_dirs[app] = templates_dir
                 if '.' in app:
                     app_templates_dirs[app.split('.')[-1]] = templates_dir
