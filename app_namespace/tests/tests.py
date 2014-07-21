@@ -1,5 +1,11 @@
 """Tests for app_namespace"""
+import os
+import sys
+import shutil
+import tempfile
+
 from django.test import TestCase
+from django.conf import settings
 from django.template.base import Context
 from django.template.base import Template
 from django.template.base import TemplateDoesNotExist
@@ -171,12 +177,52 @@ class MultiAppTestCase(TestCase):
     rendering.
     """
     maxDiff = None
+    template_initial = """
+    {%% block content %%}
+    %(app)s
+    {%% endblock content %%}
+    """
+    template_extend = """
+    {%% extends ":template.html" %%}
+    {%% block content %%}
+    %(app)s
+    {{ block.super }}
+    {%% endblock content %%}
+    """
 
     def setUp(self):
-        pass
+        # Create a temp directory containing apps
+        # accessible on the PYTHONPATH.
+        self.app_directory = tempfile.mkdtemp()
+        sys.path.append(self.app_directory)
+
+        # Create the apps with the overrided template
+        self.apps = ['test-template-app-%s' % i for i in range(5)]
+        for app in self.apps:
+            app_path = os.path.join(self.app_directory, app)
+            app_template_path = os.path.join(app_path, 'templates')
+            os.makedirs(app_template_path)
+            with open(os.path.join(app_path, '__init__.py'), 'w') as f:
+                f.write('')
+            with open(os.path.join(app_template_path,
+                                   'template.html'), 'w') as f:
+                f.write(app != self.apps[0] and
+                        self.template_extend or self.template_initial %
+                        {'app': app})
+
+        # Register the apps in settings
+        self.original_installed_apps = settings.INSTALLED_APPS[:]
+        settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
+        settings.INSTALLED_APPS.extend(self.apps)
 
     def tearDown(self):
-        pass
+        sys.path.remove(self.app_directory)
+        shutil.rmtree(self.app_directory)
+        settings.INSTALLED_APPS = self.original_installed_apps
 
     def test_multiple_extend_empty_namespace(self):
-        pass
+        context = Context({})
+        template = Template(
+            self.template_extend % {'app': 'top-level'}
+            ).render(context)
+        self.assertEquals(template, '')
