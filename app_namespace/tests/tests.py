@@ -159,3 +159,24 @@ class TemplateTestCase(TestCase):
 
         self.assertTrue(mark_ok in template_namespace)
         self.assertTrue(mark_ko in template_directory)
+
+
+class MultiAppTestCase(TestCase):
+    """
+    Test case creating multiples apps containing templates
+    with the same path which extends with an empty namespace.
+
+    Each template will use a {{ block.super }} with an unique
+    identifier to test the multiple cumulations in the final
+    rendering.
+    """
+    maxDiff = None
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_multiple_extend_empty_namespace(self):
+        pass
