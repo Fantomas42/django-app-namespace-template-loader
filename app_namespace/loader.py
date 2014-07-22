@@ -22,7 +22,13 @@ class Loader(BaseLoader):
     a template provided by an app at the same time.
     """
     is_usable = True
-    path_already_used = []
+
+    def __init__(self, *args, **kwargs):
+        super(Loader, self).__init__(self, *args, **kwargs)
+        self.path_already_used = []
+
+    def reset(self):
+        self.path_already_used = []
 
     @cached_property
     def app_templates_dirs(self):
