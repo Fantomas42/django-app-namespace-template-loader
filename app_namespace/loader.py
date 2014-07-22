@@ -22,6 +22,7 @@ class Loader(BaseLoader):
     a template provided by an app at the same time.
     """
     is_usable = True
+    path_already_used = []
 
     @cached_property
     def app_templates_dirs(self):
@@ -75,9 +76,12 @@ class Loader(BaseLoader):
         try:
             file_path = safe_join(self.app_templates_dirs[app],
                                   template_path)
+            if file_path in self.path_already_used:
+                raise TemplateDoesNotExist(template_name)
             with open(file_path, 'rb') as fp:
-                return (fp.read().decode(settings.FILE_CHARSET),
-                        'app_namespace:%s:%s' % (app, file_path))
+                template = fp.read().decode(settings.FILE_CHARSET)
+                self.path_already_used.append(file_path)
+                return (template, 'app_namespace:%s:%s' % (app, file_path))
 
         except (IOError, KeyError, ValueError):
             raise TemplateDoesNotExist(template_name)
