@@ -64,7 +64,7 @@ class Loader(BaseLoader):
             for app in self.app_templates_dirs:
                 try:
                     return self.load_template_source_inner(
-                        template_name, app, template_path)
+                        template_name, app, template_path, True)
                 except TemplateDoesNotExist:
                     pass
             raise TemplateDoesNotExist(template_name)
@@ -72,15 +72,17 @@ class Loader(BaseLoader):
             return self.load_template_source_inner(
                 template_name, app, template_path)
 
-    def load_template_source_inner(self, template_name, app, template_path):
+    def load_template_source_inner(self, template_name, app, template_path,
+                                   empty_namespace=False):
         try:
             file_path = safe_join(self.app_templates_dirs[app],
                                   template_path)
-            if file_path in self.path_already_used:
+            if empty_namespace and file_path in self.path_already_used:
                 raise TemplateDoesNotExist(template_name)
             with open(file_path, 'rb') as fp:
                 template = fp.read().decode(settings.FILE_CHARSET)
-                self.path_already_used.append(file_path)
+                if empty_namespace:
+                    self.path_already_used.append(file_path)
                 return (template, 'app_namespace:%s:%s' % (app, file_path))
 
         except (IOError, KeyError, ValueError):
