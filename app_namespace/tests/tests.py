@@ -206,8 +206,8 @@ class MultiAppTestCase(TestCase):
                 f.write('')
             with open(os.path.join(app_template_path,
                                    'template.html'), 'w') as f:
-                f.write(app != self.apps[0] and
-                        self.template_extend or self.template_initial %
+                f.write((app != self.apps[-1] and
+                         self.template_extend or self.template_initial) %
                         {'app': app})
 
         # Register the apps in settings
