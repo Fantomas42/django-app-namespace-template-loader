@@ -225,4 +225,10 @@ class MultiAppTestCase(TestCase):
         template = Template(
             self.template_extend % {'app': 'top-level'}
             ).render(context)
-        self.assertEquals(template, '')
+        previous_app = ''
+        for test_app in ['top-level'] + self.apps:
+            self.assertTrue(test_app in template)
+            if previous_app:
+                self.assertTrue(template.index(test_app) >
+                                template.index(previous_app))
+            previous_app = test_app
