@@ -76,22 +76,22 @@ class Loader(BaseLoader):
 
         app, template_path = template_name.split(':')
 
-        if app == '':
-            for app in self.app_templates_dirs:
-                file_path = self.get_app_template_path(app, template_path)
-                if file_path in self._already_used:
-                    continue
-                try:
-                    template = self.load_template_source_inner(
-                        template_name, app, template_path)
-                    self._already_used.append(file_path)
-                    return template
-                except TemplateDoesNotExist:
-                    pass
-            raise TemplateDoesNotExist(template_name)
-
-        return self.load_template_source_inner(
+        if app:
+            return self.load_template_source_inner(
                 template_name, app, template_path)
+
+        for app in self.app_templates_dirs:
+            file_path = self.get_app_template_path(app, template_path)
+            if file_path in self._already_used:
+                continue
+            try:
+                template = self.load_template_source_inner(
+                    template_name, app, template_path)
+                self._already_used.append(file_path)
+                return template
+            except TemplateDoesNotExist:
+                pass
+        raise TemplateDoesNotExist(template_name)
 
     def load_template_source_inner(self, template_name, app, template_path):
         """
