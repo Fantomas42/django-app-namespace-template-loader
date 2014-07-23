@@ -28,6 +28,9 @@ class Loader(BaseLoader):
         self.path_already_used = []
 
     def reset(self):
+        """
+        Empty the cache of paths already used.
+        """
         self.path_already_used = []
 
     @cached_property
@@ -81,6 +84,9 @@ class Loader(BaseLoader):
 
     def load_template_source_inner(self, template_name, app, template_path,
                                    empty_namespace=False):
+        """
+        Try to load 'template_path' in the templates directory of 'app'.
+        """
         try:
             file_path = safe_join(self.app_templates_dirs[app],
                                   template_path)
