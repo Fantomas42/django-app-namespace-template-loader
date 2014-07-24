@@ -23,6 +23,22 @@ class Loader(BaseLoader):
     """
     is_usable = True
 
+    def __init__(self, *args, **kwargs):
+        super(Loader, self).__init__(self, *args, **kwargs)
+        self._already_used = []
+
+    def reset(self):
+        """
+        Empty the cache of paths already used.
+        """
+        self._already_used = []
+
+    def get_app_template_path(self, app, template_path):
+        """
+        Return the full path of a template located in an app.
+        """
+        return safe_join(self.app_templates_dirs[app], template_path)
+
     @cached_property
     def app_templates_dirs(self):
         """
@@ -55,29 +71,36 @@ class Loader(BaseLoader):
         value of 'template_name' provided by the specified application.
         """
         if ':' not in template_name:
+            self.reset()
             raise TemplateDoesNotExist(template_name)
 
         app, template_path = template_name.split(':')
 
-        if app == '':
-            for app in self.app_templates_dirs:
-                try:
-                    return self.load_template_source_inner(
-                        template_name, app, template_path)
-                except TemplateDoesNotExist:
-                    pass
-            raise TemplateDoesNotExist(template_name)
-        else:
+        if app:
             return self.load_template_source_inner(
                 template_name, app, template_path)
 
-    def load_template_source_inner(self, template_name, app, template_path):
-        try:
-            file_path = safe_join(self.app_templates_dirs[app],
-                                  template_path)
-            with open(file_path, 'rb') as fp:
-                return (fp.read().decode(settings.FILE_CHARSET),
-                        'app_namespace:%s:%s' % (app, file_path))
+        for app in self.app_templates_dirs:
+            file_path = self.get_app_template_path(app, template_path)
+            if file_path in self._already_used:
+                continue
+            try:
+                template = self.load_template_source_inner(
+                    template_name, app, template_path)
+                self._already_used.append(file_path)
+                return template
+            except TemplateDoesNotExist:
+                pass
+        raise TemplateDoesNotExist(template_name)
 
+    def load_template_source_inner(self, template_name, app, template_path):
+        """
+        Try to load 'template_path' in the templates directory of 'app'.
+        """
+        try:
+            file_path = self.get_app_template_path(app, template_path)
+            with open(file_path, 'rb') as fp:
+                template = fp.read().decode(settings.FILE_CHARSET)
+                return (template, 'app_namespace:%s:%s' % (app, file_path))
         except (IOError, KeyError, ValueError):
             raise TemplateDoesNotExist(template_name)
