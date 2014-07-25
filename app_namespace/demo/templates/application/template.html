@@ -1,0 +1,22 @@
+{% extends ":application/template.html" %}
+
+{% block title %}Demo - {{ block.super }}{% endblock title %}
+
+{% block style %}
+ <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet">
+ <style type="text/css">
+   body { background-color: #eee; }
+   .container .row div { background-color: white; }
+ </style>
+{% endblock style %}
+
+{% block list %}
+<li>
+  <code>application/template.html</code>
+</li>
+{{ block.super }}
+{% endblock list %}
+
+{% block footer %}
+Demo made by <a href="https://github.com/Fantomas42">Fantomas42</a>.
+{% endblock footer %}
