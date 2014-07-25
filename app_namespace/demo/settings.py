@@ -23,6 +23,6 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    'demo.application_extension',
-    'demo.application'
+    'app_namespace.demo.application_extension',
+    'app_namespace.demo.application'
 )
