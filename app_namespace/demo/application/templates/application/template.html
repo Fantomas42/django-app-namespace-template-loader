@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="author" content="Fantomas42">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Django-app-namespace-template-loader{% endblock title %}</title>
+    {% block style %}
+    {% endblock style %}
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12 col-md-offset-0">
+          <h1>{% block header %}Header{% endblock header %}</h1>
+          <p>{% block content %}Content{% endblock content %}</p>
+          <ul>
+            {% block list %}
+            <li>
+              <code>application:application/template.html</code>
+            </li>
+            {% endblock%}
+          </ul>
+          <footer>
+            <p class="text-right">
+              {% block footer %}Footer{% endblock footer %}
+            </p>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
