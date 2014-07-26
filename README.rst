@@ -16,14 +16,29 @@ This is the issue that this package tries to resolve.
 Examples:
 ---------
 
-Extend and override the title block of Django admin base template: ::
+You want to change the title of the admin site, you would originally
+created this template: ::
+
+    $ cat my-project/templates/admin/base_site.html
+    {% extends "admin/base.html" %}
+    {% load i18n %}
+
+    {% block title %}{{ title }} | My Project{% endblock %}
+
+    {% block branding %}
+    <h1 id="site-name">{% trans 'Django administration' %}</h1>
+    {% endblock %}
+
+    {% block nav-global %}{% endblock %}
+
+Extend and override version with a namespace: ::
 
     $ cat my-project/templates/admin/base_site.html
     {% extends "admin:admin/base_site.html" %}
 
     {% block title %}{{ title }} - My Project{% endblock %}
 
-Shorter example: ::
+Shorter version without namespace: ::
 
     $ cat my-project/templates/admin/base_site.html
     {% extends ":admin/base_site.html" %}
