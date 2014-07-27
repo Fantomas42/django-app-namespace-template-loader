@@ -16,7 +16,7 @@ This is the issue that this package tries to resolve.
 Examples:
 ---------
 
-You want to change the title of the admin site, you would originally
+You want to change the titles of the admin site, you would originally
 created this template: ::
 
     $ cat my-project/templates/admin/base_site.html
@@ -26,7 +26,7 @@ created this template: ::
     {% block title %}{{ title }} | My Project{% endblock %}
 
     {% block branding %}
-    <h1 id="site-name">{% trans 'Django administration' %}</h1>
+    <h1 id="site-name">My Project</h1>
     {% endblock %}
 
     {% block nav-global %}{% endblock %}
@@ -38,12 +38,23 @@ Extend and override version with a namespace: ::
 
     {% block title %}{{ title }} - My Project{% endblock %}
 
+    {% block branding %}
+    <h1 id="site-name">My Project</h1>
+    {% endblock %}
+
+Note that in this version the block ``nav-global`` does not have to be
+present because of the inheritence.
+
 Shorter version without namespace: ::
 
     $ cat my-project/templates/admin/base_site.html
     {% extends ":admin/base_site.html" %}
 
     {% block title %}{{ title }} - My Project{% endblock %}
+
+    {% block branding %}
+    <h1 id="site-name">My Project</h1>
+    {% endblock %}
 
 If we do not specify the application namespace, the first matching template
 will be used. This is useful when several applications provide the same
