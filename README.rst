@@ -73,7 +73,7 @@ Add `app_namespace.Loader` to the ``TEMPLATE_LOADERS`` setting of your project. 
 Notes
 -----
 
-Based on: http://djangosnippets.org/snippets/1376/
+Based originally on: http://djangosnippets.org/snippets/1376/
 
 Requires: Django >= 1.4
 
