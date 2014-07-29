@@ -43,7 +43,7 @@ Extend and override version with a namespace: ::
     {% endblock %}
 
 Note that in this version the block ``nav-global`` does not have to be
-present because of the inheritence.
+present because of the inheritance.
 
 Shorter version without namespace: ::
 
@@ -69,6 +69,13 @@ Add `app_namespace.Loader` to the ``TEMPLATE_LOADERS`` setting of your project. 
       'app_namespace.Loader',
       ... # Other template loaders
     ]
+
+Known limitations
+=================
+
+`app_namespace.Loader` can not work properly if you use it in conjunction
+with `django.template.loaders.cached.Loader` and inheritance based on empty
+namespaces.
 
 Notes
 -----
