@@ -58,7 +58,34 @@ Shorter version without namespace: ::
 
 If we do not specify the application namespace, the first matching template
 will be used. This is useful when several applications provide the same
-template.
+templates but with different features.
+
+Example of multiple empty namespaces: ::
+
+    $ cat my-project/application/templates/application/template.html
+    {% block content%}
+    <p>Application</p>
+    {% endblock content%}
+
+    $ cat my-project/application_extension/templates/application/template.html
+    {% extends ":application/template.html" %}
+    {% block content%}
+    {{ block.super }}
+    <p>Application extension</p>
+    {% endblock content%}
+
+    $ cat my-project/templates/application/template.html
+    {% extends ":application/template.html" %}
+    {% block content%}
+    {{ block.super }}
+    <p>Application project</p>
+    {% endblock content%}
+
+Will render: ::
+
+    <p>Application</p>
+    <p>Application extension</p>
+    <p>Application project</p>
 
 Installation
 ------------
