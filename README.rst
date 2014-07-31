@@ -16,23 +16,76 @@ This is the issue that this package tries to resolve.
 Examples:
 ---------
 
-Extend and override the title block of Django admin base template: ::
+You want to change the titles of the admin site, you would originally
+created this template: ::
+
+    $ cat my-project/templates/admin/base_site.html
+    {% extends "admin/base.html" %}
+    {% load i18n %}
+
+    {% block title %}{{ title }} | My Project{% endblock %}
+
+    {% block branding %}
+    <h1 id="site-name">My Project</h1>
+    {% endblock %}
+
+    {% block nav-global %}{% endblock %}
+
+Extend and override version with a namespace: ::
 
     $ cat my-project/templates/admin/base_site.html
     {% extends "admin:admin/base_site.html" %}
 
     {% block title %}{{ title }} - My Project{% endblock %}
 
-Shorter example: ::
+    {% block branding %}
+    <h1 id="site-name">My Project</h1>
+    {% endblock %}
+
+Note that in this version the block ``nav-global`` does not have to be
+present because of the inheritance.
+
+Shorter version without namespace: ::
 
     $ cat my-project/templates/admin/base_site.html
     {% extends ":admin/base_site.html" %}
 
     {% block title %}{{ title }} - My Project{% endblock %}
 
+    {% block branding %}
+    <h1 id="site-name">My Project</h1>
+    {% endblock %}
+
 If we do not specify the application namespace, the first matching template
 will be used. This is useful when several applications provide the same
-template.
+templates but with different features.
+
+Example of multiple empty namespaces: ::
+
+    $ cat my-project/application/templates/application/template.html
+    {% block content%}
+    <p>Application</p>
+    {% endblock content%}
+
+    $ cat my-project/application_extension/templates/application/template.html
+    {% extends ":application/template.html" %}
+    {% block content%}
+    {{ block.super }}
+    <p>Application extension</p>
+    {% endblock content%}
+
+    $ cat my-project/templates/application/template.html
+    {% extends ":application/template.html" %}
+    {% block content%}
+    {{ block.super }}
+    <p>Application project</p>
+    {% endblock content%}
+
+Will render: ::
+
+    <p>Application</p>
+    <p>Application extension</p>
+    <p>Application project</p>
 
 Installation
 ------------
@@ -44,10 +97,17 @@ Add `app_namespace.Loader` to the ``TEMPLATE_LOADERS`` setting of your project. 
       ... # Other template loaders
     ]
 
+Known limitations
+=================
+
+`app_namespace.Loader` can not work properly if you use it in conjunction
+with `django.template.loaders.cached.Loader` and inheritance based on empty
+namespaces.
+
 Notes
 -----
 
-Based on: http://djangosnippets.org/snippets/1376/
+Based originally on: http://djangosnippets.org/snippets/1376/
 
 Requires: Django >= 1.4
 
