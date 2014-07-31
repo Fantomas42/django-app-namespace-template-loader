@@ -90,7 +90,8 @@ Will render: ::
 Installation
 ------------
 
-Add `app_namespace.Loader` to the ``TEMPLATE_LOADERS`` setting of your project. ::
+Add ``app_namespace.Loader`` to the ``TEMPLATE_LOADERS`` setting of your
+project. ::
 
     TEMPLATE_LOADERS = [
       'app_namespace.Loader',
@@ -100,9 +101,9 @@ Add `app_namespace.Loader` to the ``TEMPLATE_LOADERS`` setting of your project. 
 Known limitations
 =================
 
-`app_namespace.Loader` can not work properly if you use it in conjunction
-with `django.template.loaders.cached.Loader` and inheritance based on empty
-namespaces.
+``app_namespace.Loader`` can not work properly if you use it in conjunction
+with ``django.template.loaders.cached.Loader`` and inheritance based on
+empty namespaces.
 
 Notes
 -----
