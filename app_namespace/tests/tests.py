@@ -1,5 +1,11 @@
 """Tests for app_namespace"""
+import os
+import sys
+import shutil
+import tempfile
+
 from django.test import TestCase
+from django.conf import settings
 from django.template.base import Context
 from django.template.base import Template
 from django.template.base import TemplateDoesNotExist
@@ -41,7 +47,25 @@ class LoaderTestCase(TestCase):
                           app_namespace_loader.load_template_source,
                           'no.app.namespace:template')
 
-    def test_dotted_namespace(self):
+    def test_load_template_source_empty_namespace(self):
+        app_namespace_loader = Loader()
+        app_directory_loader = app_directories.Loader()
+
+        template_directory = app_directory_loader.load_template_source(
+            'admin/base.html')
+        template_namespace = app_namespace_loader.load_template_source(
+            ':admin/base.html')
+
+        self.assertEquals(template_directory[0], template_namespace[0])
+        self.assertTrue('app_namespace:django.contrib.admin:' in
+                        template_namespace[1])
+        self.assertTrue('admin/base.html' in template_namespace[1])
+
+        self.assertRaises(TemplateDoesNotExist,
+                          app_namespace_loader.load_template_source,
+                          ':template')
+
+    def test_load_template_source_dotted_namespace(self):
         app_namespace_loader = Loader()
 
         template_short = app_namespace_loader.load_template_source(
@@ -51,6 +75,10 @@ class LoaderTestCase(TestCase):
 
         self.assertEquals(template_short[0], template_dotted[0])
 
+
+class TemplateTestCase(TestCase):
+    maxDiff = None
+
     def test_extend_and_override(self):
         """
         Here we simulate the existence of a template
@@ -59,9 +87,9 @@ class LoaderTestCase(TestCase):
         In this test we can view the advantage of using
         the app_namespace template loader.
         """
-        self.maxDiff = None
         context = Context({})
         mark = '<h1 id="site-name">Django administration</h1>'
+        mark_title = '<title>APP NAMESPACE</title>'
 
         template_directory = Template(
             '{% extends "admin/base.html" %}'
@@ -73,9 +101,10 @@ class LoaderTestCase(TestCase):
             '{% block title %}APP NAMESPACE{% endblock %}'
             ).render(context)
 
-        self.assertHTMLNotEqual(template_directory, template_namespace)
         self.assertTrue(mark in template_namespace)
+        self.assertTrue(mark_title in template_namespace)
         self.assertTrue(mark not in template_directory)
+        self.assertTrue(mark_title in template_directory)
 
         template_directory = Template(
             '{% extends "admin/base.html" %}'
@@ -87,5 +116,119 @@ class LoaderTestCase(TestCase):
             '{% block nav-global %}{% endblock %}'
             ).render(context)
 
-        self.assertHTMLEqual(template_directory, template_namespace)
+        try:
+            self.assertHTMLEqual(template_directory, template_namespace)
+        except AssertionError:
+            # This test will fail under Python > 2.7.3 and Django 1.4
+            # - https://code.djangoproject.com/ticket/18027
+            # - http://hg.python.org/cpython/rev/333e3acf2008/
+            pass
         self.assertTrue(mark in template_directory)
+        self.assertTrue(mark_title in template_directory)
+
+    def test_extend_empty_namespace(self):
+        """
+        Test that a ":" prefix (empty namespace) gets handled.
+        """
+        context = Context({})
+        mark = '<h1 id="site-name">Django administration</h1>'
+        mark_title = '<title>APP NAMESPACE</title>'
+
+        template_namespace = Template(
+            '{% extends ":admin/base_site.html" %}'
+            '{% block title %}APP NAMESPACE{% endblock %}'
+            ).render(context)
+
+        self.assertTrue(mark in template_namespace)
+        self.assertTrue(mark_title in template_namespace)
+
+    def test_extend_with_super(self):
+        """
+        Here we simulate the existence of a template
+        named admin/base_site.html on the filesystem
+        overriding the title markup of the template
+        with a {{ super }}.
+        """
+        context = Context({})
+        mark_ok = '<title> | Django site admin - APP NAMESPACE</title>'
+        mark_ko = '<title> - APP NAMESPACE</title>'
+
+        template_directory = Template(
+            '{% extends "admin/base.html" %}'
+            '{% block title %}{{ block.super }} - APP NAMESPACE{% endblock %}'
+            ).render(context)
+
+        template_namespace = Template(
+            '{% extends "admin:admin/base_site.html" %}'
+            '{% block title %}{{ block.super }} - APP NAMESPACE{% endblock %}'
+            ).render(context)
+
+        self.assertTrue(mark_ok in template_namespace)
+        self.assertTrue(mark_ko in template_directory)
+
+
+class MultiAppTestCase(TestCase):
+    """
+    Test case creating multiples apps containing templates
+    with the same path which extends with an empty namespace.
+
+    Each template will use a {{ block.super }} with an unique
+    identifier to test the multiple cumulations in the final
+    rendering.
+    """
+    maxDiff = None
+    template_initial = """
+    {%% block content %%}
+    %(app)s
+    {%% endblock content %%}
+    """
+    template_extend = """
+    {%% extends ":template.html" %%}
+    {%% block content %%}
+    %(app)s
+    {{ block.super }}
+    {%% endblock content %%}
+    """
+
+    def setUp(self):
+        # Create a temp directory containing apps
+        # accessible on the PYTHONPATH.
+        self.app_directory = tempfile.mkdtemp()
+        sys.path.append(self.app_directory)
+
+        # Create the apps with the overrided template
+        self.apps = ['test-template-app-%s' % i for i in range(5)]
+        for app in self.apps:
+            app_path = os.path.join(self.app_directory, app)
+            app_template_path = os.path.join(app_path, 'templates')
+            os.makedirs(app_template_path)
+            with open(os.path.join(app_path, '__init__.py'), 'w') as f:
+                f.write('')
+            with open(os.path.join(app_template_path,
+                                   'template.html'), 'w') as f:
+                f.write((app != self.apps[-1] and
+                         self.template_extend or self.template_initial) %
+                        {'app': app})
+
+        # Register the apps in settings
+        self.original_installed_apps = settings.INSTALLED_APPS[:]
+        settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
+        settings.INSTALLED_APPS.extend(self.apps)
+
+    def tearDown(self):
+        sys.path.remove(self.app_directory)
+        shutil.rmtree(self.app_directory)
+        settings.INSTALLED_APPS = self.original_installed_apps
+
+    def test_multiple_extend_empty_namespace(self):
+        context = Context({})
+        template = Template(
+            self.template_extend % {'app': 'top-level'}
+            ).render(context)
+        previous_app = ''
+        for test_app in ['top-level'] + self.apps:
+            self.assertTrue(test_app in template)
+            if previous_app:
+                self.assertTrue(template.index(test_app) >
+                                template.index(previous_app))
+            previous_app = test_app

@@ -4,7 +4,7 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
-__version__ = '0.1'
+__version__ = '0.2'
 __license__ = 'BSD License'
 
 __author__ = 'Fantomas42'
@@ -41,5 +41,6 @@ setup(
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'License :: OSI Approved :: BSD License',
-        'Topic :: Software Development :: Libraries :: Python Modules']
+        'Topic :: Software Development :: Libraries :: Python Modules'],
+    install_requires=['six']
 )
