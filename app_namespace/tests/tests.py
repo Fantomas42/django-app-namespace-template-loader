@@ -88,7 +88,7 @@ class TemplateTestCase(TestCase):
         the app_namespace template loader.
         """
         context = Context({})
-        mark = '<h1 id="site-name">Django administration</h1>'
+        mark = 'Django administration'
         mark_title = '<title>APP NAMESPACE</title>'
 
         template_directory = Template(
@@ -131,7 +131,7 @@ class TemplateTestCase(TestCase):
         Test that a ":" prefix (empty namespace) gets handled.
         """
         context = Context({})
-        mark = '<h1 id="site-name">Django administration</h1>'
+        mark = 'Django administration'
         mark_title = '<title>APP NAMESPACE</title>'
 
         template_namespace = Template(
