@@ -19,10 +19,12 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_DIRS = (
-    os.path.join(PROJECT_ROOT, 'templates')
+    os.path.join(PROJECT_ROOT, 'templates'),
 )
 
 INSTALLED_APPS = (
     'app_namespace.demo.application_extension',
     'app_namespace.demo.application'
 )
+
+SILENCED_SYSTEM_CHECKS = ['1_7.W001']
