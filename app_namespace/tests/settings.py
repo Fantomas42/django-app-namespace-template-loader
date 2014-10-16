@@ -14,3 +14,5 @@ ROOT_URLCONF = 'app_namespace.tests.urls'
 INSTALLED_APPS = ('django.contrib.auth',
                   'django.contrib.admin',
                   'django.contrib.contenttypes')
+
+SILENCED_SYSTEM_CHECKS = ['1_7.W001']
