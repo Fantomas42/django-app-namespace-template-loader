@@ -10,6 +10,7 @@ from django.template.base import Context
 from django.template.base import Template
 from django.template.base import TemplateDoesNotExist
 from django.template.loaders import app_directories
+from django.test.utils import override_settings
 
 from app_namespace import Loader
 
@@ -232,3 +233,19 @@ class MultiAppTestCase(TestCase):
                 self.assertTrue(template.index(test_app) >
                                 template.index(previous_app))
             previous_app = test_app
+
+
+@override_settings(
+    TEMPLATE_LOADERS=(
+        ('django.template.loaders.cached.Loader', (
+            'app_namespace.Loader',
+            'django.template.loaders.app_directories.Loader',
+            )
+         ),
+    )
+)
+class CachedLoaderTestCase(MultiAppTestCase):
+    """
+    Tests multiple empty namespaces inheritence,
+    with django.template.loaders.cached.Loader enabled.
+    """
