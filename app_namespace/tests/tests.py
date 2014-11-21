@@ -224,6 +224,8 @@ class MultiAppTestCase(TestCase):
 
     def tearDown(self):
         sys.path.remove(self.app_directory)
+        for app in self.apps:
+            del sys.modules[app]
         shutil.rmtree(self.app_directory)
         settings.INSTALLED_APPS = self.original_installed_apps
 
