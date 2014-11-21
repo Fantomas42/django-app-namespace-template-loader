@@ -77,6 +77,12 @@ class LoaderTestCase(TestCase):
         self.assertEquals(template_short[0], template_dotted[0])
 
 
+@override_settings(
+    TEMPLATE_LOADERS=(
+        'app_namespace.Loader',
+        'django.template.loaders.app_directories.Loader',
+    )
+)
 class TemplateTestCase(TestCase):
     maxDiff = None
 
@@ -221,7 +227,7 @@ class MultiAppTestCase(TestCase):
         shutil.rmtree(self.app_directory)
         settings.INSTALLED_APPS = self.original_installed_apps
 
-    def test_multiple_extend_empty_namespace(self):
+    def multiple_extend_empty_namespace(self):
         context = Context({})
         template = Template(
             self.template_extend % {'app': 'top-level'}
@@ -234,18 +240,23 @@ class MultiAppTestCase(TestCase):
                                 template.index(previous_app))
             previous_app = test_app
 
-
-@override_settings(
-    TEMPLATE_LOADERS=(
-        ('django.template.loaders.cached.Loader', (
+    @override_settings(
+        TEMPLATE_LOADERS=(
             'app_namespace.Loader',
             'django.template.loaders.app_directories.Loader',
-            )
-         ),
+        )
     )
-)
-class CachedLoaderTestCase(MultiAppTestCase):
-    """
-    Tests multiple empty namespaces inheritence,
-    with django.template.loaders.cached.Loader enabled.
-    """
+    def test_multiple_extend_empty_namespace(self):
+        self.multiple_extend_empty_namespace()
+
+    @override_settings(
+        TEMPLATE_LOADERS=(
+            ('django.template.loaders.cached.Loader', (
+                'app_namespace.Loader',
+                'django.template.loaders.app_directories.Loader',
+                )
+             ),
+        )
+    )
+    def test_cached_multiple_extend_empty_namespace(self):
+        self.multiple_extend_empty_namespace()
