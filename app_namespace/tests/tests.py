@@ -261,4 +261,5 @@ class MultiAppTestCase(TestCase):
         )
     )
     def test_cached_multiple_extend_empty_namespace(self):
-        self.multiple_extend_empty_namespace()
+        with self.assertRaises(RuntimeError):
+            self.multiple_extend_empty_namespace()
