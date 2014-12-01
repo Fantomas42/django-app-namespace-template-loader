@@ -10,6 +10,7 @@ from django.template.base import Context
 from django.template.base import Template
 from django.template.base import TemplateDoesNotExist
 from django.template.loaders import app_directories
+from django.test.utils import override_settings
 
 from app_namespace import Loader
 
@@ -76,6 +77,12 @@ class LoaderTestCase(TestCase):
         self.assertEquals(template_short[0], template_dotted[0])
 
 
+@override_settings(
+    TEMPLATE_LOADERS=(
+        'app_namespace.Loader',
+        'django.template.loaders.app_directories.Loader',
+    )
+)
 class TemplateTestCase(TestCase):
     maxDiff = None
 
@@ -217,10 +224,12 @@ class MultiAppTestCase(TestCase):
 
     def tearDown(self):
         sys.path.remove(self.app_directory)
+        for app in self.apps:
+            del sys.modules[app]
         shutil.rmtree(self.app_directory)
         settings.INSTALLED_APPS = self.original_installed_apps
 
-    def test_multiple_extend_empty_namespace(self):
+    def multiple_extend_empty_namespace(self):
         context = Context({})
         template = Template(
             self.template_extend % {'app': 'top-level'}
@@ -232,3 +241,25 @@ class MultiAppTestCase(TestCase):
                 self.assertTrue(template.index(test_app) >
                                 template.index(previous_app))
             previous_app = test_app
+
+    @override_settings(
+        TEMPLATE_LOADERS=(
+            'app_namespace.Loader',
+            'django.template.loaders.app_directories.Loader',
+        )
+    )
+    def test_multiple_extend_empty_namespace(self):
+        self.multiple_extend_empty_namespace()
+
+    @override_settings(
+        TEMPLATE_LOADERS=(
+            ('django.template.loaders.cached.Loader', (
+                'app_namespace.Loader',
+                'django.template.loaders.app_directories.Loader',
+                )
+             ),
+        )
+    )
+    def test_cached_multiple_extend_empty_namespace(self):
+        with self.assertRaises(RuntimeError):
+            self.multiple_extend_empty_namespace()
