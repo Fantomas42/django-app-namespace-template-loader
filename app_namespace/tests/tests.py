@@ -4,8 +4,10 @@ import sys
 import shutil
 import tempfile
 
+import django
 from django.test import TestCase
 from django.conf import settings
+from django.utils.unittest import skipIf
 from django.template.base import Context
 from django.template.base import Template
 from django.template.base import TemplateDoesNotExist
@@ -251,6 +253,8 @@ class MultiAppTestCase(TestCase):
     def test_multiple_extend_empty_namespace(self):
         self.multiple_extend_empty_namespace()
 
+    @skipIf(django.VERSION[1] == 4,
+            'Django 1.4 will continue to use the cached.Loader')
     @override_settings(
         TEMPLATE_LOADERS=(
             ('django.template.loaders.cached.Loader', (
