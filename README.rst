@@ -90,8 +90,13 @@ Will render: ::
 Installation
 ------------
 
-Add ``app_namespace.Loader`` to the ``TEMPLATE_LOADERS`` setting of your
-project. ::
+First of all install ``django-app-namespace-template-loader`` with your
+favorite package manager. Example : ::
+
+    $ pip install django-app-namespace-template-loader
+
+Once installed, add ``app_namespace.Loader`` to the ``TEMPLATE_LOADERS``
+setting of your project. ::
 
     TEMPLATE_LOADERS = [
       'app_namespace.Loader',
