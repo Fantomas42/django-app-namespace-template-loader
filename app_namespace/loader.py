@@ -6,12 +6,15 @@ import six
 
 from django.conf import settings
 from django.utils._os import safe_join
-from django.template.loader import BaseLoader
 from django.utils.importlib import import_module
 from django.utils.functional import cached_property
 from django.template.base import TemplateDoesNotExist
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.datastructures import SortedDict  # Deprecated in Django 1.9
+try:
+    from django.template.loaders.base import Loader as BaseLoader
+except ImportError:  # Django < 1.8
+    from django.template.loader import BaseLoader
 
 FS_ENCODING = sys.getfilesystemencoding() or sys.getdefaultencoding()
 
@@ -24,7 +27,7 @@ class Loader(BaseLoader):
     is_usable = True
 
     def __init__(self, *args, **kwargs):
-        super(Loader, self).__init__(self, *args, **kwargs)
+        super(Loader, self).__init__(*args, **kwargs)
         self._already_used = []
 
     def reset(self):
