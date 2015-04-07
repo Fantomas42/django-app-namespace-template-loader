@@ -9,6 +9,16 @@ TEMPLATE_LOADERS = [
     'django.template.loaders.app_directories.Loader',
 ]
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'OPTIONS': {
+            'loaders': ('app_namespace.Loader',
+                        'django.template.loaders.app_directories.Loader')
+        }
+    }
+]
+
 ROOT_URLCONF = 'app_namespace.tests.urls'
 
 INSTALLED_APPS = ('django.contrib.auth',
