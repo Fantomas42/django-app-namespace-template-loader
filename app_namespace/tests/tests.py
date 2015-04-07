@@ -14,14 +14,20 @@ from django.template.base import TemplateDoesNotExist
 from django.template.loaders import app_directories
 from django.test.utils import override_settings
 
+try:
+    from django.template.engine import Engine
+except ImportError:  # Django < 1.8
+    class Engine(object):
+        pass
+
 from app_namespace import Loader
 
 
 class LoaderTestCase(TestCase):
 
     def test_load_template(self):
-        app_namespace_loader = Loader()
-        app_directory_loader = app_directories.Loader()
+        app_namespace_loader = Loader(Engine())
+        app_directory_loader = app_directories.Loader(Engine())
 
         template_directory = app_directory_loader.load_template(
             'admin/base.html')[0]
@@ -32,8 +38,8 @@ class LoaderTestCase(TestCase):
                           template_namespace.render(context))
 
     def test_load_template_source(self):
-        app_namespace_loader = Loader()
-        app_directory_loader = app_directories.Loader()
+        app_namespace_loader = Loader(Engine())
+        app_directory_loader = app_directories.Loader(Engine())
 
         template_directory = app_directory_loader.load_template_source(
             'admin/base.html')
@@ -51,8 +57,8 @@ class LoaderTestCase(TestCase):
                           'no.app.namespace:template')
 
     def test_load_template_source_empty_namespace(self):
-        app_namespace_loader = Loader()
-        app_directory_loader = app_directories.Loader()
+        app_namespace_loader = Loader(Engine())
+        app_directory_loader = app_directories.Loader(Engine())
 
         template_directory = app_directory_loader.load_template_source(
             'admin/base.html')
@@ -69,7 +75,7 @@ class LoaderTestCase(TestCase):
                           ':template')
 
     def test_load_template_source_dotted_namespace(self):
-        app_namespace_loader = Loader()
+        app_namespace_loader = Loader(Engine())
 
         template_short = app_namespace_loader.load_template_source(
             'admin:admin/base.html')
