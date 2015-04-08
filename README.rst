@@ -103,6 +103,19 @@ setting of your project. ::
       ... # Other template loaders
     ]
 
+Or if you use Django >= 1.8 add ``app_namespace.Loader`` to the
+``'loaders'`` section in the OPTION of the ``DjangoTemplates`` backend. ::
+
+    TEMPLATES = [
+        {
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'OPTIONS': {
+                'loaders': ('app_namespace.Loader',
+                           'django.template.loaders.app_directories.Loader')
+            }
+        }
+    ]
+
 Known limitations
 =================
 
@@ -117,7 +130,10 @@ Based originally on: http://djangosnippets.org/snippets/1376/
 
 Requires: Django >= 1.4
 
-Tested with Python 2.6, 2.7, 3.2, 3.3, 3.4.
+Tested with Python 2.7, 3.2, 3.3, 3.4.
+
+If you want to use this application with Python 2.6, use the version 0.2 of
+the package.
 
 .. |travis-develop| image:: https://travis-ci.org/Fantomas42/django-app-namespace-template-loader.png?branch=develop
    :alt: Build Status - develop branch
