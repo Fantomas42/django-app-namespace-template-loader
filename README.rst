@@ -132,6 +132,9 @@ Requires: Django >= 1.4
 
 Tested with Python 2.7, 3.2, 3.3, 3.4.
 
+If you want to use this application with Python 2.6, use the version 0.2 of
+the package.
+
 .. |travis-develop| image:: https://travis-ci.org/Fantomas42/django-app-namespace-template-loader.png?branch=develop
    :alt: Build Status - develop branch
    :target: http://travis-ci.org/Fantomas42/django-app-namespace-template-loader
