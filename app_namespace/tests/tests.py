@@ -89,7 +89,16 @@ class LoaderTestCase(TestCase):
     TEMPLATE_LOADERS=(
         'app_namespace.Loader',
         'django.template.loaders.app_directories.Loader',
-    )
+    ),
+    TEMPLATES=[
+        {
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'OPTIONS': {
+                'loaders': ('app_namespace.Loader',
+                            'django.template.loaders.app_directories.Loader')
+            }
+        }
+    ]
 )
 class TemplateTestCase(TestCase):
     maxDiff = None
@@ -206,6 +215,7 @@ class MultiAppTestCase(TestCase):
     """
 
     def setUp(self):
+        super(MultiAppTestCase, self).setUp()
         # Create a temp directory containing apps
         # accessible on the PYTHONPATH.
         self.app_directory = tempfile.mkdtemp()
@@ -231,6 +241,7 @@ class MultiAppTestCase(TestCase):
         settings.INSTALLED_APPS.extend(self.apps)
 
     def tearDown(self):
+        super(MultiAppTestCase, self).tearDown()
         sys.path.remove(self.app_directory)
         for app in self.apps:
             del sys.modules[app]
@@ -254,7 +265,17 @@ class MultiAppTestCase(TestCase):
         TEMPLATE_LOADERS=(
             'app_namespace.Loader',
             'django.template.loaders.app_directories.Loader',
-        )
+        ),
+        TEMPLATES=[
+            {
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'OPTIONS': {
+                    'loaders': (
+                        'app_namespace.Loader',
+                        'django.template.loaders.app_directories.Loader')
+                }
+            }
+        ]
     )
     def test_multiple_extend_empty_namespace(self):
         self.multiple_extend_empty_namespace()
@@ -265,10 +286,21 @@ class MultiAppTestCase(TestCase):
         TEMPLATE_LOADERS=(
             ('django.template.loaders.cached.Loader', (
                 'app_namespace.Loader',
-                'django.template.loaders.app_directories.Loader',
-                )
+                'django.template.loaders.app_directories.Loader')
              ),
-        )
+        ),
+        TEMPLATES=[
+            {
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'OPTIONS': {
+                    'loaders': [
+                        ('django.template.loaders.cached.Loader', [
+                            'app_namespace.Loader',
+                            'django.template.loaders.app_directories.Loader']),
+                    ]
+                }
+            }
+        ]
     )
     def test_cached_multiple_extend_empty_namespace(self):
         with self.assertRaises(RuntimeError):
