@@ -4,13 +4,14 @@ import os
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 STATIC_URL = '/static/'
 
 SECRET_KEY = 'secret-key'
 
 ROOT_URLCONF = 'app_namespace.demo.urls'
+
+TEMPLATE_DEBUG = DEBUG
 
 TEMPLATE_LOADERS = (
     'app_namespace.Loader',
@@ -19,10 +20,27 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_DIRS = (
-    os.path.join(PROJECT_ROOT, 'templates')
+    os.path.join(PROJECT_ROOT, 'templates'),
 )
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(PROJECT_ROOT, 'templates'),
+        ],
+        'OPTIONS': {
+            'debug': DEBUG,
+            'loaders': ('app_namespace.Loader',
+                        'django.template.loaders.filesystem.Loader',
+                        'django.template.loaders.app_directories.Loader')
+        }
+    }
+]
 
 INSTALLED_APPS = (
     'app_namespace.demo.application_extension',
     'app_namespace.demo.application'
 )
+
+SILENCED_SYSTEM_CHECKS = ['1_7.W001']

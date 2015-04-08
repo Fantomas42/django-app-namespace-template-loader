@@ -4,7 +4,7 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
-__version__ = '0.2'
+__version__ = '0.3'
 __license__ = 'BSD License'
 
 __author__ = 'Fantomas42'
@@ -34,7 +34,6 @@ setup(
     classifiers=[
         'Framework :: Django',
         'Environment :: Web Environment',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',

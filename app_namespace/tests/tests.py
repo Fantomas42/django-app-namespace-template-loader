@@ -3,13 +3,22 @@ import os
 import sys
 import shutil
 import tempfile
+import unittest
 
+import django
 from django.test import TestCase
 from django.conf import settings
 from django.template.base import Context
 from django.template.base import Template
 from django.template.base import TemplateDoesNotExist
 from django.template.loaders import app_directories
+from django.test.utils import override_settings
+
+try:
+    from django.template.engine import Engine
+except ImportError:  # Django < 1.8
+    class Engine(object):
+        pass
 
 from app_namespace import Loader
 
@@ -17,8 +26,8 @@ from app_namespace import Loader
 class LoaderTestCase(TestCase):
 
     def test_load_template(self):
-        app_namespace_loader = Loader()
-        app_directory_loader = app_directories.Loader()
+        app_namespace_loader = Loader(Engine())
+        app_directory_loader = app_directories.Loader(Engine())
 
         template_directory = app_directory_loader.load_template(
             'admin/base.html')[0]
@@ -29,8 +38,8 @@ class LoaderTestCase(TestCase):
                           template_namespace.render(context))
 
     def test_load_template_source(self):
-        app_namespace_loader = Loader()
-        app_directory_loader = app_directories.Loader()
+        app_namespace_loader = Loader(Engine())
+        app_directory_loader = app_directories.Loader(Engine())
 
         template_directory = app_directory_loader.load_template_source(
             'admin/base.html')
@@ -48,8 +57,8 @@ class LoaderTestCase(TestCase):
                           'no.app.namespace:template')
 
     def test_load_template_source_empty_namespace(self):
-        app_namespace_loader = Loader()
-        app_directory_loader = app_directories.Loader()
+        app_namespace_loader = Loader(Engine())
+        app_directory_loader = app_directories.Loader(Engine())
 
         template_directory = app_directory_loader.load_template_source(
             'admin/base.html')
@@ -66,7 +75,7 @@ class LoaderTestCase(TestCase):
                           ':template')
 
     def test_load_template_source_dotted_namespace(self):
-        app_namespace_loader = Loader()
+        app_namespace_loader = Loader(Engine())
 
         template_short = app_namespace_loader.load_template_source(
             'admin:admin/base.html')
@@ -76,6 +85,21 @@ class LoaderTestCase(TestCase):
         self.assertEquals(template_short[0], template_dotted[0])
 
 
+@override_settings(
+    TEMPLATE_LOADERS=(
+        'app_namespace.Loader',
+        'django.template.loaders.app_directories.Loader',
+    ),
+    TEMPLATES=[
+        {
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'OPTIONS': {
+                'loaders': ('app_namespace.Loader',
+                            'django.template.loaders.app_directories.Loader')
+            }
+        }
+    ]
+)
 class TemplateTestCase(TestCase):
     maxDiff = None
 
@@ -88,7 +112,7 @@ class TemplateTestCase(TestCase):
         the app_namespace template loader.
         """
         context = Context({})
-        mark = '<h1 id="site-name">Django administration</h1>'
+        mark = 'Django administration'
         mark_title = '<title>APP NAMESPACE</title>'
 
         template_directory = Template(
@@ -131,7 +155,7 @@ class TemplateTestCase(TestCase):
         Test that a ":" prefix (empty namespace) gets handled.
         """
         context = Context({})
-        mark = '<h1 id="site-name">Django administration</h1>'
+        mark = 'Django administration'
         mark_title = '<title>APP NAMESPACE</title>'
 
         template_namespace = Template(
@@ -191,6 +215,7 @@ class MultiAppTestCase(TestCase):
     """
 
     def setUp(self):
+        super(MultiAppTestCase, self).setUp()
         # Create a temp directory containing apps
         # accessible on the PYTHONPATH.
         self.app_directory = tempfile.mkdtemp()
@@ -216,11 +241,14 @@ class MultiAppTestCase(TestCase):
         settings.INSTALLED_APPS.extend(self.apps)
 
     def tearDown(self):
+        super(MultiAppTestCase, self).tearDown()
         sys.path.remove(self.app_directory)
+        for app in self.apps:
+            del sys.modules[app]
         shutil.rmtree(self.app_directory)
         settings.INSTALLED_APPS = self.original_installed_apps
 
-    def test_multiple_extend_empty_namespace(self):
+    def multiple_extend_empty_namespace(self):
         context = Context({})
         template = Template(
             self.template_extend % {'app': 'top-level'}
@@ -232,3 +260,48 @@ class MultiAppTestCase(TestCase):
                 self.assertTrue(template.index(test_app) >
                                 template.index(previous_app))
             previous_app = test_app
+
+    @override_settings(
+        TEMPLATE_LOADERS=(
+            'app_namespace.Loader',
+            'django.template.loaders.app_directories.Loader',
+        ),
+        TEMPLATES=[
+            {
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'OPTIONS': {
+                    'loaders': (
+                        'app_namespace.Loader',
+                        'django.template.loaders.app_directories.Loader')
+                }
+            }
+        ]
+    )
+    def test_multiple_extend_empty_namespace(self):
+        self.multiple_extend_empty_namespace()
+
+    @unittest.skipIf(django.VERSION[1] == 4,
+                     'Django 1.4 will continue to use the cached.Loader')
+    @override_settings(
+        TEMPLATE_LOADERS=(
+            ('django.template.loaders.cached.Loader', (
+                'app_namespace.Loader',
+                'django.template.loaders.app_directories.Loader')
+             ),
+        ),
+        TEMPLATES=[
+            {
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'OPTIONS': {
+                    'loaders': [
+                        ('django.template.loaders.cached.Loader', [
+                            'app_namespace.Loader',
+                            'django.template.loaders.app_directories.Loader']),
+                    ]
+                }
+            }
+        ]
+    )
+    def test_cached_multiple_extend_empty_namespace(self):
+        with self.assertRaises(RuntimeError):
+            self.multiple_extend_empty_namespace()

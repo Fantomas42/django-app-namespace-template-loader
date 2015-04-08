@@ -1,17 +1,20 @@
 """Template loader for app-namespace"""
 import os
 import sys
+from importlib import import_module
+from collections import OrderedDict
 
 import six
 
 from django.conf import settings
 from django.utils._os import safe_join
-from django.template.loader import BaseLoader
-from django.utils.importlib import import_module
 from django.utils.functional import cached_property
 from django.template.base import TemplateDoesNotExist
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.datastructures import SortedDict  # Deprecated in Django 1.9
+try:
+    from django.template.loaders.base import Loader as BaseLoader
+except ImportError:  # Django < 1.8
+    from django.template.loader import BaseLoader
 
 FS_ENCODING = sys.getfilesystemencoding() or sys.getdefaultencoding()
 
@@ -24,7 +27,7 @@ class Loader(BaseLoader):
     is_usable = True
 
     def __init__(self, *args, **kwargs):
-        super(Loader, self).__init__(self, *args, **kwargs)
+        super(Loader, self).__init__(*args, **kwargs)
         self._already_used = []
 
     def reset(self):
@@ -45,7 +48,7 @@ class Loader(BaseLoader):
         Build a cached dict with settings.INSTALLED_APPS as keys
         and the 'templates' directory of each application as values.
         """
-        app_templates_dirs = SortedDict()
+        app_templates_dirs = OrderedDict()
         for app in settings.INSTALLED_APPS:
             try:
                 mod = import_module(app)
