@@ -103,14 +103,16 @@ setting of your project. ::
       ... # Other template loaders
     ]
 
-Or if you use Django >= 1.8 add ``app_namespace.Loader`` to the
-``'loaders'`` section in the OPTION of the ``DjangoTemplates`` backend. ::
+With Django >= 1.8 ``app_namespace.Loader`` should be added to the
+``'loaders'`` section in the OPTIONS dict of the ``DjangoTemplates`` backend
+instead. ::
 
     TEMPLATES = [
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
             'OPTIONS': {
                 'loaders': ('app_namespace.Loader',
+                           'django.template.loaders.filesystem.Loader',
                            'django.template.loaders.app_directories.Loader')
             }
         }
