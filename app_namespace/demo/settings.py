@@ -43,4 +43,4 @@ INSTALLED_APPS = (
     'app_namespace.demo.application'
 )
 
-SILENCED_SYSTEM_CHECKS = ['1_7.W001']
+SILENCED_SYSTEM_CHECKS = ['1_7.W001', '1_8.W001']
