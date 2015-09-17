@@ -111,11 +111,13 @@ instead. ::
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
             'OPTIONS': {
-                'loaders': ('app_namespace.Loader',
-                           'django.template.loaders.filesystem.Loader',
-                           'django.template.loaders.app_directories.Loader')
-            }
-        }
+                'loaders': [
+                    'app_namespace.Loader',
+                    'django.template.loaders.filesystem.Loader',
+                    'django.template.loaders.app_directories.Loader',
+                ],
+            },
+        },
     ]
 
 Known limitations
