@@ -9,7 +9,7 @@ import django
 from django.test import TestCase
 from django.template.base import Context
 from django.template.base import Template
-from django.template.base import TemplateDoesNotExist
+from django.template import TemplateDoesNotExist
 from django.template.loaders import app_directories
 from django.test.utils import override_settings
 
@@ -25,8 +25,14 @@ from app_namespace import Loader
 class LoaderTestCase(TestCase):
 
     def test_load_template(self):
-        app_namespace_loader = Loader(Engine())
-        app_directory_loader = app_directories.Loader(Engine())
+        libraries = {
+            'i18n': 'django.templatetags.i18n',
+            'static': 'django.templatetags.static',
+            'admin_static': 'django.contrib.admin.templatetags.admin_static'}
+        app_namespace_loader = Loader(Engine(
+            libraries=libraries))
+        app_directory_loader = app_directories.Loader(Engine(
+            libraries=libraries))
 
         template_directory = app_directory_loader.load_template(
             'admin/base.html')[0]
