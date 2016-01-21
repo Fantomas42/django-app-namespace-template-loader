@@ -17,7 +17,8 @@ try:
     from django.template.engine import Engine
 except ImportError:  # Django < 1.8
     class Engine(object):
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
 
 from app_namespace import Loader
 
