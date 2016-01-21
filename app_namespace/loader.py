@@ -8,8 +8,8 @@ import six
 
 from django.conf import settings
 from django.utils._os import safe_join
+from django.template import TemplateDoesNotExist
 from django.utils.functional import cached_property
-from django.template.base import TemplateDoesNotExist
 from django.core.exceptions import ImproperlyConfigured
 try:
     from django.template.loaders.base import Loader as BaseLoader
