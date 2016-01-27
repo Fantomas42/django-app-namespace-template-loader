@@ -30,10 +30,15 @@ class LoaderTestCase(TestCase):
             'i18n': 'django.templatetags.i18n',
             'static': 'django.templatetags.static',
             'admin_static': 'django.contrib.admin.templatetags.admin_static'}
-        app_namespace_loader = Loader(Engine(
-            libraries=libraries))
-        app_directory_loader = app_directories.Loader(Engine(
-            libraries=libraries))
+
+        def build_engine():
+            try:
+                return Engine(libraries=libraries)
+            except TypeError:
+                return Engine()
+
+        app_namespace_loader = Loader(build_engine())
+        app_directory_loader = app_directories.Loader(build_engine())
 
         template_directory = app_directory_loader.load_template(
             'admin/base.html')[0]
