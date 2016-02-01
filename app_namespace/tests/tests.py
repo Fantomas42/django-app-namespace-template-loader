@@ -7,7 +7,6 @@ import unittest
 
 import django
 from django.test import TestCase
-from django.conf import settings
 from django.template.base import Context
 from django.template.base import Template
 from django.template.base import TemplateDoesNotExist
@@ -235,31 +234,27 @@ class MultiAppTestCase(TestCase):
                          self.template_extend or self.template_initial) %
                         {'app': app})
 
-        # Register the apps in settings
-        self.original_installed_apps = settings.INSTALLED_APPS[:]
-        settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
-        settings.INSTALLED_APPS.extend(self.apps)
-
     def tearDown(self):
         super(MultiAppTestCase, self).tearDown()
         sys.path.remove(self.app_directory)
         for app in self.apps:
             del sys.modules[app]
         shutil.rmtree(self.app_directory)
-        settings.INSTALLED_APPS = self.original_installed_apps
 
     def multiple_extend_empty_namespace(self):
-        context = Context({})
-        template = Template(
-            self.template_extend % {'app': 'top-level'}
-            ).render(context)
-        previous_app = ''
-        for test_app in ['top-level'] + self.apps:
-            self.assertTrue(test_app in template)
-            if previous_app:
-                self.assertTrue(template.index(test_app) >
-                                template.index(previous_app))
-            previous_app = test_app
+        with self.settings(INSTALLED_APPS=self.apps +
+                           ['django.contrib.admin']):  # Django 1.4 Fix
+            context = Context({})
+            template = Template(
+                self.template_extend % {'app': 'top-level'}
+                ).render(context)
+            previous_app = ''
+            for test_app in ['top-level'] + self.apps:
+                self.assertTrue(test_app in template)
+                if previous_app:
+                    self.assertTrue(template.index(test_app) >
+                                    template.index(previous_app))
+                previous_app = test_app
 
     @override_settings(
         TEMPLATE_LOADERS=(
