@@ -242,7 +242,8 @@ class MultiAppTestCase(TestCase):
         shutil.rmtree(self.app_directory)
 
     def multiple_extend_empty_namespace(self):
-        with self.settings(INSTALLED_APPS=self.apps):
+        with self.settings(INSTALLED_APPS=self.apps +
+                           ['django.contrib.admin']):  # Django 1.4 Fix
             context = Context({})
             template = Template(
                 self.template_extend % {'app': 'top-level'}
