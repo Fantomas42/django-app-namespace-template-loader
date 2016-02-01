@@ -40,7 +40,8 @@ TEMPLATES = [
 
 INSTALLED_APPS = (
     'app_namespace.demo.application_extension',
-    'app_namespace.demo.application'
+    'app_namespace.demo.application_appconfig.apps.ApplicationConfig',
+    'app_namespace.demo.application',
 )
 
 SILENCED_SYSTEM_CHECKS = ['1_7.W001', '1_8.W001']
