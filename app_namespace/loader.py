@@ -1,12 +1,29 @@
 """Template loader for app-namespace"""
 import os
+import io
+import errno
 from collections import OrderedDict
 
-from django.conf import settings
+from django.apps import apps
+from django.utils._os import upath
 from django.utils._os import safe_join
+try:
+    from django.template import Origin
+except:
+    class Origin(object):
+        def __init__(self, *ka, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
 from django.template import TemplateDoesNotExist
 from django.utils.functional import cached_property
 from django.template.loaders.base import Loader as BaseLoader
+
+
+class NamespaceOrigin(Origin):
+
+    def __init__(self, app_name, *args, **kwargs):
+        self.app_name = app_name
+        super(NamespaceOrigin, self).__init__(*args, **kwargs)
 
 
 class Loader(BaseLoader):
@@ -26,11 +43,11 @@ class Loader(BaseLoader):
         """
         self._already_used = []
 
-    def get_app_template_path(self, app, template_path):
+    def get_app_template_path(self, app, template_name):
         """
-        Return the full path of a template located in an app.
+        Return the full path of a template name located in an app.
         """
-        return safe_join(self.app_templates_dirs[app], template_path)
+        return safe_join(self.app_templates_dirs[app], template_name)
 
     @cached_property
     def app_templates_dirs(self):
@@ -38,9 +55,6 @@ class Loader(BaseLoader):
         Build a cached dict with settings.INSTALLED_APPS as keys
         and the 'templates' directory of each application as values.
         """
-        from django.apps import apps
-        from django.utils._os import upath
-
         app_templates_dirs = OrderedDict()
         for app_config in apps.get_app_configs():
             if not app_config.path:
@@ -53,43 +67,59 @@ class Loader(BaseLoader):
                 app_templates_dirs[app_config.label] = templates_dir
         return app_templates_dirs
 
-    def load_template_source(self, template_name, template_dirs=None):
+    def get_contents(self, origin):
         """
-        Try to load 'template_name' splitted with ':'. The first item
-        is the name of the application and the last item is the true
-        value of 'template_name' provided by the specified application.
+        Try to load the origin.
+        """
+        try:
+            path = self.get_app_template_path(
+                origin.app_name, origin.template_name)
+            with io.open(path, encoding=self.engine.file_charset) as fp:
+                return fp.read()
+        except KeyError:
+            raise TemplateDoesNotExist(origin)
+        except IOError as error:
+            if error.errno == errno.ENOENT:
+                raise TemplateDoesNotExist(origin)
+            raise
+
+    def get_template_sources(self, template_name, template_dirs=None):
+        """
+        Build a list of Origin to load 'template_name' splitted with ':'.
+        The first item is the name of the application and the last item
+        is the true value of 'template_name' provided by the specified
+        application.
         """
         if ':' not in template_name:
             self.reset()
-            raise TemplateDoesNotExist(template_name)
+            return
 
         app, template_path = template_name.split(':')
-
         if app:
-            return self.load_template_source_inner(
-                template_name, app, template_path)
+            yield NamespaceOrigin(
+                app_name=app,
+                name='app_namespace:%s:%s' % (app, template_name),
+                template_name=template_path,
+                loader=self)
 
         for app in self.app_templates_dirs:
             file_path = self.get_app_template_path(app, template_path)
             if file_path in self._already_used:
                 continue
+            self._already_used.append(file_path)
+            yield NamespaceOrigin(
+                app_name=app,
+                name='app_namespace:%s:%s' % (app, template_name),
+                template_name=template_path,
+                loader=self)
+
+    def load_template_source(self, template_name, template_dirs=None):
+        """
+        Backward compatible method for Django < 2.0.
+        """
+        for origin in self.get_template_sources(template_name, template_dirs):
             try:
-                template = self.load_template_source_inner(
-                    template_name, app, template_path)
-                self._already_used.append(file_path)
-                return template
+                return self.get_contents(origin), origin.name
             except TemplateDoesNotExist:
                 pass
         raise TemplateDoesNotExist(template_name)
-
-    def load_template_source_inner(self, template_name, app, template_path):
-        """
-        Try to load 'template_path' in the templates directory of 'app'.
-        """
-        try:
-            file_path = self.get_app_template_path(app, template_path)
-            with open(file_path, 'rb') as fp:
-                template = fp.read().decode(settings.FILE_CHARSET)
-                return (template, 'app_namespace:%s:%s' % (app, file_path))
-        except (IOError, KeyError, ValueError):
-            raise TemplateDoesNotExist(template_name)
