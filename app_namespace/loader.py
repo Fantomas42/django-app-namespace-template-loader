@@ -42,12 +42,37 @@ class Loader(BaseLoader):
         """
         return safe_join(self.app_templates_dirs[app], template_path)
 
+    def app_templates_dirs_django_18(self):
+        """
+        Build a cached dict with settings.INSTALLED_APPS as keys
+        and the 'templates' directory of each application as values.
+        """
+        from django.apps import apps
+        from django.utils._os import upath
+
+        app_templates_dirs = OrderedDict()
+        for app_config in apps.get_app_configs():
+            if not app_config.path:
+                continue
+            templates_dir = os.path.join(
+                app_config.path, 'templates')
+            if os.path.isdir(templates_dir):
+                templates_dir = upath(templates_dir)
+                app_templates_dirs[app_config.name] = templates_dir
+                app_templates_dirs[app_config.label] = templates_dir
+        return app_templates_dirs
+
     @cached_property
     def app_templates_dirs(self):
         """
         Build a cached dict with settings.INSTALLED_APPS as keys
         and the 'templates' directory of each application as values.
         """
+        try:
+            return self.app_templates_dirs_django_18()
+        except ImportError:
+            pass
+
         app_templates_dirs = OrderedDict()
         for app in settings.INSTALLED_APPS:
             try:
