@@ -185,6 +185,18 @@ class TemplateTestCase(TestCase):
         self.assertTrue(mark_ko in template_directory)
 
 
+@override_settings(
+    TEMPLATES=[
+        {
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'OPTIONS': {
+                'loaders': (
+                    'app_namespace.Loader',
+                    'django.template.loaders.app_directories.Loader')
+            }
+        }
+    ]
+)
 class MultiAppTestCase(TestCase):
     """
     Test case creating multiples apps containing templates
@@ -207,6 +219,12 @@ class MultiAppTestCase(TestCase):
     {{ block.super }}
     {%% endblock content %%}
     """
+    template_app = """
+from django.apps import AppConfig
+class ApplicationConfig(AppConfig):
+    name = __name__
+    label = '%(app)s'
+    """
 
     def setUp(self):
         super(MultiAppTestCase, self).setUp()
@@ -223,6 +241,8 @@ class MultiAppTestCase(TestCase):
             os.makedirs(app_template_path)
             with open(os.path.join(app_path, '__init__.py'), 'w') as f:
                 f.write('')
+            with open(os.path.join(app_path, 'apps.py'), 'w') as f:
+                f.write(self.template_app % {'app': app})
             with open(os.path.join(app_template_path,
                                    'template.html'), 'w') as f:
                 f.write((app != self.apps[-1] and
@@ -236,8 +256,10 @@ class MultiAppTestCase(TestCase):
             del sys.modules[app]
         shutil.rmtree(self.app_directory)
 
-    def multiple_extend_empty_namespace(self):
-        with self.settings(INSTALLED_APPS=self.apps):
+    def multiple_extend_empty_namespace(self, apps=None):
+        if apps is None:
+            apps = self.apps
+        with self.settings(INSTALLED_APPS=apps):
             context = Context({})
             template = Template(
                 self.template_extend % {'app': 'top-level'}
@@ -250,20 +272,13 @@ class MultiAppTestCase(TestCase):
                                     template.index(previous_app))
                 previous_app = test_app
 
-    @override_settings(
-        TEMPLATES=[
-            {
-                'BACKEND': 'django.template.backends.django.DjangoTemplates',
-                'OPTIONS': {
-                    'loaders': (
-                        'app_namespace.Loader',
-                        'django.template.loaders.app_directories.Loader')
-                }
-            }
-        ]
-    )
     def test_multiple_extend_empty_namespace(self):
         self.multiple_extend_empty_namespace()
+
+    def test_app_config_multiple_extend_empty_namespace(self):
+        apps_config = ['%s.apps.ApplicationConfig' % app
+                       for app in self.apps]
+        self.multiple_extend_empty_namespace(apps_config)
 
     @override_settings(
         TEMPLATES=[
