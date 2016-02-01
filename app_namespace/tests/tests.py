@@ -3,22 +3,14 @@ import os
 import sys
 import shutil
 import tempfile
-import unittest
 
-import django
 from django.test import TestCase
 from django.template.base import Context
 from django.template.base import Template
+from django.template.engine import Engine
 from django.template import TemplateDoesNotExist
 from django.template.loaders import app_directories
 from django.test.utils import override_settings
-
-try:
-    from django.template.engine import Engine
-except ImportError:  # Django < 1.8
-    class Engine(object):
-        def __init__(self, *args, **kwargs):
-            pass
 
 from app_namespace import Loader
 
@@ -97,10 +89,6 @@ class LoaderTestCase(TestCase):
 
 
 @override_settings(
-    TEMPLATE_LOADERS=(
-        'app_namespace.Loader',
-        'django.template.loaders.app_directories.Loader',
-    ),
     TEMPLATES=[
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -146,18 +134,13 @@ class TemplateTestCase(TestCase):
             '{% load i18n %}'
             '{% block title %}APP NAMESPACE{% endblock %}'
             '{% block branding %}'
-            '<h1 id="site-name">{% trans \'Django administration\' %}</h1>'
-            '{% endblock %}'
+            '<h1 id="site-name"><a href="/admin/">'
+            '{% trans \'Django administration\' %}'
+            '</a></h1>{% endblock %}'
             '{% block nav-global %}{% endblock %}'
             ).render(context)
 
-        try:
-            self.assertHTMLEqual(template_directory, template_namespace)
-        except AssertionError:
-            # This test will fail under Python > 2.7.3 and Django 1.4
-            # - https://code.djangoproject.com/ticket/18027
-            # - http://hg.python.org/cpython/rev/333e3acf2008/
-            pass
+        self.assertHTMLEqual(template_directory, template_namespace)
         self.assertTrue(mark in template_directory)
         self.assertTrue(mark_title in template_directory)
 
@@ -254,8 +237,7 @@ class MultiAppTestCase(TestCase):
         shutil.rmtree(self.app_directory)
 
     def multiple_extend_empty_namespace(self):
-        with self.settings(INSTALLED_APPS=self.apps +
-                           ['django.contrib.admin']):  # Django 1.4 Fix
+        with self.settings(INSTALLED_APPS=self.apps):
             context = Context({})
             template = Template(
                 self.template_extend % {'app': 'top-level'}
@@ -269,10 +251,6 @@ class MultiAppTestCase(TestCase):
                 previous_app = test_app
 
     @override_settings(
-        TEMPLATE_LOADERS=(
-            'app_namespace.Loader',
-            'django.template.loaders.app_directories.Loader',
-        ),
         TEMPLATES=[
             {
                 'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -287,15 +265,7 @@ class MultiAppTestCase(TestCase):
     def test_multiple_extend_empty_namespace(self):
         self.multiple_extend_empty_namespace()
 
-    @unittest.skipIf(django.VERSION[1] == 4,
-                     'Django 1.4 will continue to use the cached.Loader')
     @override_settings(
-        TEMPLATE_LOADERS=(
-            ('django.template.loaders.cached.Loader', (
-                'app_namespace.Loader',
-                'django.template.loaders.app_directories.Loader')
-             ),
-        ),
         TEMPLATES=[
             {
                 'BACKEND': 'django.template.backends.django.DjangoTemplates',

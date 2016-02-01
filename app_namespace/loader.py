@@ -1,22 +1,12 @@
 """Template loader for app-namespace"""
 import os
-import sys
-from importlib import import_module
 from collections import OrderedDict
-
-import six
 
 from django.conf import settings
 from django.utils._os import safe_join
 from django.template import TemplateDoesNotExist
 from django.utils.functional import cached_property
-from django.core.exceptions import ImproperlyConfigured
-try:
-    from django.template.loaders.base import Loader as BaseLoader
-except ImportError:  # Django < 1.8
-    from django.template.loader import BaseLoader
-
-FS_ENCODING = sys.getfilesystemencoding() or sys.getdefaultencoding()
+from django.template.loaders.base import Loader as BaseLoader
 
 
 class Loader(BaseLoader):
@@ -42,7 +32,8 @@ class Loader(BaseLoader):
         """
         return safe_join(self.app_templates_dirs[app], template_path)
 
-    def app_templates_dirs_django_18(self):
+    @cached_property
+    def app_templates_dirs(self):
         """
         Build a cached dict with settings.INSTALLED_APPS as keys
         and the 'templates' directory of each application as values.
@@ -60,36 +51,6 @@ class Loader(BaseLoader):
                 templates_dir = upath(templates_dir)
                 app_templates_dirs[app_config.name] = templates_dir
                 app_templates_dirs[app_config.label] = templates_dir
-        return app_templates_dirs
-
-    @cached_property
-    def app_templates_dirs(self):
-        """
-        Build a cached dict with settings.INSTALLED_APPS as keys
-        and the 'templates' directory of each application as values.
-        """
-        try:
-            return self.app_templates_dirs_django_18()
-        except ImportError:
-            pass
-
-        app_templates_dirs = OrderedDict()
-        for app in settings.INSTALLED_APPS:
-            try:
-                mod = import_module(app)
-            except ImportError as e:         # pragma: no cover
-                raise ImproperlyConfigured(  # pragma: no cover
-                    'ImportError %s: %s' % (
-                        app, e.args[0]))
-            templates_dir = os.path.join(os.path.dirname(mod.__file__),
-                                         'templates')
-            if os.path.isdir(templates_dir):
-                if six.PY2:
-                    templates_dir = templates_dir.decode(FS_ENCODING)
-                app_templates_dirs[app] = templates_dir
-                if '.' in app:
-                    app_templates_dirs[app.split('.')[-1]] = templates_dir
-
         return app_templates_dirs
 
     def load_template_source(self, template_name, template_dirs=None):
