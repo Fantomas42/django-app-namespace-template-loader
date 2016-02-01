@@ -7,7 +7,6 @@ import unittest
 
 import django
 from django.test import TestCase
-from django.conf import settings
 from django.template.base import Context
 from django.template.base import Template
 from django.template.base import TemplateDoesNotExist
