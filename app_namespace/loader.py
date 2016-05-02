@@ -11,7 +11,7 @@ try:
     from django.template import Origin
 except ImportError:  # pragma: no cover
     class Origin(object):
-        def __init__(self, *ka, **kwargs):
+        def __init__(self, **kwargs):
             for k, v in kwargs.items():
                 setattr(self, k, v)
 from django.template import TemplateDoesNotExist
@@ -81,7 +81,7 @@ class Loader(BaseLoader):
                 raise TemplateDoesNotExist(origin)
             raise
 
-    def get_template_sources(self, template_name, template_dirs=None):
+    def get_template_sources(self, template_name):
         """
         Build a list of Origin to load 'template_name' splitted with ':'.
         The first item is the name of the application and the last item
@@ -111,11 +111,11 @@ class Loader(BaseLoader):
                 template_name=template_path,
                 loader=self)
 
-    def load_template_source(self, template_name, template_dirs=None):
+    def load_template_source(self, template_name, *ka):
         """
         Backward compatible method for Django < 2.0.
         """
-        for origin in self.get_template_sources(template_name, template_dirs):
+        for origin in self.get_template_sources(template_name):
             try:
                 return self.get_contents(origin), origin.name
             except TemplateDoesNotExist:
