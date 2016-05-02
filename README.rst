@@ -132,9 +132,12 @@ Notes
 
 Based originally on: http://djangosnippets.org/snippets/1376/
 
-Requires: Django >= 1.4
+Requires: Django >= 1.8
 
-Tested with Python 2.7, 3.2, 3.3, 3.4.
+Tested with Python 2.7, 3.3, 3.4.
+
+If you want to use this application for previous versions of Django, use the
+version 0.3.1 of the package.
 
 If you want to use this application with Python 2.6, use the version 0.2 of
 the package.

@@ -4,7 +4,7 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
-__version__ = '0.3.1'
+__version__ = '0.4'
 __license__ = 'BSD License'
 
 __author__ = 'Fantomas42'
@@ -35,8 +35,8 @@ setup(
         'Framework :: Django',
         'Environment :: Web Environment',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'License :: OSI Approved :: BSD License',

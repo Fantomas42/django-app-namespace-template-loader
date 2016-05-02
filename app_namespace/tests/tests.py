@@ -3,21 +3,14 @@ import os
 import sys
 import shutil
 import tempfile
-import unittest
 
-import django
 from django.test import TestCase
 from django.template.base import Context
 from django.template.base import Template
-from django.template.base import TemplateDoesNotExist
+from django.template.engine import Engine
+from django.template import TemplateDoesNotExist
 from django.template.loaders import app_directories
 from django.test.utils import override_settings
-
-try:
-    from django.template.engine import Engine
-except ImportError:  # Django < 1.8
-    class Engine(object):
-        pass
 
 from app_namespace import Loader
 
@@ -25,8 +18,19 @@ from app_namespace import Loader
 class LoaderTestCase(TestCase):
 
     def test_load_template(self):
-        app_namespace_loader = Loader(Engine())
-        app_directory_loader = app_directories.Loader(Engine())
+        libraries = {
+            'i18n': 'django.templatetags.i18n',
+            'static': 'django.templatetags.static',
+            'admin_static': 'django.contrib.admin.templatetags.admin_static'}
+
+        def build_engine():
+            try:
+                return Engine(libraries=libraries)
+            except TypeError:
+                return Engine()
+
+        app_namespace_loader = Loader(build_engine())
+        app_directory_loader = app_directories.Loader(build_engine())
 
         template_directory = app_directory_loader.load_template(
             'admin/base.html')[0]
@@ -85,10 +89,6 @@ class LoaderTestCase(TestCase):
 
 
 @override_settings(
-    TEMPLATE_LOADERS=(
-        'app_namespace.Loader',
-        'django.template.loaders.app_directories.Loader',
-    ),
     TEMPLATES=[
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -134,18 +134,13 @@ class TemplateTestCase(TestCase):
             '{% load i18n %}'
             '{% block title %}APP NAMESPACE{% endblock %}'
             '{% block branding %}'
-            '<h1 id="site-name">{% trans \'Django administration\' %}</h1>'
-            '{% endblock %}'
+            '<h1 id="site-name"><a href="/admin/">'
+            '{% trans \'Django administration\' %}'
+            '</a></h1>{% endblock %}'
             '{% block nav-global %}{% endblock %}'
             ).render(context)
 
-        try:
-            self.assertHTMLEqual(template_directory, template_namespace)
-        except AssertionError:
-            # This test will fail under Python > 2.7.3 and Django 1.4
-            # - https://code.djangoproject.com/ticket/18027
-            # - http://hg.python.org/cpython/rev/333e3acf2008/
-            pass
+        self.assertHTMLEqual(template_directory, template_namespace)
         self.assertTrue(mark in template_directory)
         self.assertTrue(mark_title in template_directory)
 
@@ -190,6 +185,18 @@ class TemplateTestCase(TestCase):
         self.assertTrue(mark_ko in template_directory)
 
 
+@override_settings(
+    TEMPLATES=[
+        {
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'OPTIONS': {
+                'loaders': (
+                    'app_namespace.Loader',
+                    'django.template.loaders.app_directories.Loader')
+            }
+        }
+    ]
+)
 class MultiAppTestCase(TestCase):
     """
     Test case creating multiples apps containing templates
@@ -212,6 +219,12 @@ class MultiAppTestCase(TestCase):
     {{ block.super }}
     {%% endblock content %%}
     """
+    template_app = """
+from django.apps import AppConfig
+class ApplicationConfig(AppConfig):
+    name = __name__
+    label = '%(app)s'
+    """
 
     def setUp(self):
         super(MultiAppTestCase, self).setUp()
@@ -228,6 +241,8 @@ class MultiAppTestCase(TestCase):
             os.makedirs(app_template_path)
             with open(os.path.join(app_path, '__init__.py'), 'w') as f:
                 f.write('')
+            with open(os.path.join(app_path, 'apps.py'), 'w') as f:
+                f.write(self.template_app % {'app': app})
             with open(os.path.join(app_template_path,
                                    'template.html'), 'w') as f:
                 f.write((app != self.apps[-1] and
@@ -241,9 +256,10 @@ class MultiAppTestCase(TestCase):
             del sys.modules[app]
         shutil.rmtree(self.app_directory)
 
-    def multiple_extend_empty_namespace(self):
-        with self.settings(INSTALLED_APPS=self.apps +
-                           ['django.contrib.admin']):  # Django 1.4 Fix
+    def multiple_extend_empty_namespace(self, apps=None):
+        if apps is None:
+            apps = self.apps
+        with self.settings(INSTALLED_APPS=apps):
             context = Context({})
             template = Template(
                 self.template_extend % {'app': 'top-level'}
@@ -256,34 +272,15 @@ class MultiAppTestCase(TestCase):
                                     template.index(previous_app))
                 previous_app = test_app
 
-    @override_settings(
-        TEMPLATE_LOADERS=(
-            'app_namespace.Loader',
-            'django.template.loaders.app_directories.Loader',
-        ),
-        TEMPLATES=[
-            {
-                'BACKEND': 'django.template.backends.django.DjangoTemplates',
-                'OPTIONS': {
-                    'loaders': (
-                        'app_namespace.Loader',
-                        'django.template.loaders.app_directories.Loader')
-                }
-            }
-        ]
-    )
     def test_multiple_extend_empty_namespace(self):
         self.multiple_extend_empty_namespace()
 
-    @unittest.skipIf(django.VERSION[1] == 4,
-                     'Django 1.4 will continue to use the cached.Loader')
+    def test_app_config_multiple_extend_empty_namespace(self):
+        apps_config = ['%s.apps.ApplicationConfig' % app
+                       for app in self.apps]
+        self.multiple_extend_empty_namespace(apps_config)
+
     @override_settings(
-        TEMPLATE_LOADERS=(
-            ('django.template.loaders.cached.Loader', (
-                'app_namespace.Loader',
-                'django.template.loaders.app_directories.Loader')
-             ),
-        ),
         TEMPLATES=[
             {
                 'BACKEND': 'django.template.backends.django.DjangoTemplates',

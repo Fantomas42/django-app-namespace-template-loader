@@ -4,11 +4,6 @@ DATABASES = {'default': {'NAME': 'app_namespace.db',
 
 SECRET_KEY = 'secret-key'
 
-TEMPLATE_LOADERS = [
-    'app_namespace.Loader',
-    'django.template.loaders.app_directories.Loader',
-]
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

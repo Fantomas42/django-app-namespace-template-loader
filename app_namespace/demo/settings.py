@@ -11,18 +11,6 @@ SECRET_KEY = 'secret-key'
 
 ROOT_URLCONF = 'app_namespace.demo.urls'
 
-TEMPLATE_DEBUG = DEBUG
-
-TEMPLATE_LOADERS = (
-    'app_namespace.Loader',
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-)
-
-TEMPLATE_DIRS = (
-    os.path.join(PROJECT_ROOT, 'templates'),
-)
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
