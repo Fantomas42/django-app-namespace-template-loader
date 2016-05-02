@@ -111,10 +111,11 @@ class Loader(BaseLoader):
                 template_name=template_path,
                 loader=self)
 
-    def load_template_source(self, template_name, *ka):
+    def load_template_source(self, *ka):
         """
         Backward compatible method for Django < 2.0.
         """
+        template_name = ka[0]
         for origin in self.get_template_sources(template_name):
             try:
                 return self.get_contents(origin), origin.name
