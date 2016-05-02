@@ -9,7 +9,7 @@ from django.utils._os import upath
 from django.utils._os import safe_join
 try:
     from django.template import Origin
-except:
+except ImportError:  # pragma: no cover
     class Origin(object):
         def __init__(self, *ka, **kwargs):
             for k, v in kwargs.items():
@@ -57,10 +57,8 @@ class Loader(BaseLoader):
         """
         app_templates_dirs = OrderedDict()
         for app_config in apps.get_app_configs():
-            if not app_config.path:
-                continue
             templates_dir = os.path.join(
-                app_config.path, 'templates')
+                getattr(app_config, 'path', '/'), 'templates')
             if os.path.isdir(templates_dir):
                 templates_dir = upath(templates_dir)
                 app_templates_dirs[app_config.name] = templates_dir
