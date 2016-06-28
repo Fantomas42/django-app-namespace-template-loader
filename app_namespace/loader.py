@@ -99,6 +99,7 @@ class Loader(BaseLoader):
                 name='app_namespace:%s:%s' % (app, template_name),
                 template_name=template_path,
                 loader=self)
+            return
 
         for app in self.app_templates_dirs:
             file_path = self.get_app_template_path(app, template_path)

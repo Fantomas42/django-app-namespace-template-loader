@@ -87,6 +87,18 @@ class LoaderTestCase(TestCase):
 
         self.assertEquals(template_short[0], template_dotted[0])
 
+    def test_load_template_invalid_namespace_valid_template(self):
+        app_namespace_loader = Loader(Engine())
+        with self.assertRaises(TemplateDoesNotExist):
+            app_namespace_loader.load_template_source(
+                'invalid:admin/base.html')
+
+    def test_load_template_valid_namespace_invalid_template(self):
+        app_namespace_loader = Loader(Engine())
+        with self.assertRaises(TemplateDoesNotExist):
+            app_namespace_loader.load_template_source(
+                'admin:admin/base_invalid.html')
+
 
 @override_settings(
     TEMPLATES=[
