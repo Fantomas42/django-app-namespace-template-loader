@@ -4,12 +4,14 @@ import sys
 import shutil
 import tempfile
 
+import django
 from django.test import TestCase
 from django.template.base import Context
 from django.template.base import Template
 from django.template.engine import Engine
 from django.template import TemplateDoesNotExist
 from django.template.loaders import app_directories
+from django.core.urlresolvers import reverse
 from django.test.utils import override_settings
 
 from app_namespace import Loader
@@ -86,6 +88,18 @@ class LoaderTestCase(TestCase):
             'django.contrib.admin:admin/base.html')
 
         self.assertEquals(template_short[0], template_dotted[0])
+
+    def test_load_template_invalid_namespace_valid_template(self):
+        app_namespace_loader = Loader(Engine())
+        with self.assertRaises(TemplateDoesNotExist):
+            app_namespace_loader.load_template_source(
+                'invalid:admin/base.html')
+
+    def test_load_template_valid_namespace_invalid_template(self):
+        app_namespace_loader = Loader(Engine())
+        with self.assertRaises(TemplateDoesNotExist):
+            app_namespace_loader.load_template_source(
+                'admin:admin/base_invalid.html')
 
 
 @override_settings(
@@ -297,3 +311,56 @@ class ApplicationConfig(AppConfig):
     def test_cached_multiple_extend_empty_namespace(self):
         with self.assertRaises(RuntimeError):
             self.multiple_extend_empty_namespace()
+
+
+class ViewTestCase(TestCase):
+
+    def load_view_twice(self):
+        url = reverse('template-view')
+        r1 = self.client.get(url).content
+        r2 = self.client.get(url).content
+        self.assertEquals(r1, r2)
+
+    @override_settings(
+        TEMPLATES=[
+            {
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'DIRS': [
+                    os.path.abspath(os.path.dirname(__file__)),
+                ],
+                'OPTIONS': {
+                    'loaders': (
+                        'app_namespace.Loader',
+                        'django.template.loaders.filesystem.Loader',
+                        'django.template.loaders.app_directories.Loader',
+                    )
+                }
+            }
+        ]
+    )
+    def test_load_view_twice_app_namespace_first(self):
+        self.load_view_twice()
+
+    @override_settings(
+        TEMPLATES=[
+            {
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'DIRS': [
+                    os.path.abspath(os.path.dirname(__file__)),
+                ],
+                'OPTIONS': {
+                    'loaders': (
+                        'django.template.loaders.filesystem.Loader',
+                        'django.template.loaders.app_directories.Loader',
+                        'app_namespace.Loader',
+                    )
+                }
+            }
+        ]
+    )
+    def test_load_view_twice_app_namespace_last(self):
+        if django.VERSION[1] == 8:
+            with self.assertRaises(TemplateDoesNotExist):
+                self.load_view_twice()
+        else:
+            self.load_view_twice()

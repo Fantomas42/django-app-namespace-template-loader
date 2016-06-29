@@ -120,6 +120,9 @@ instead. ::
         },
     ]
 
+Note: With Django 1.8, ``app_namespace.Loader`` should be first in the list
+of loaders.
+
 Known limitations
 =================
 
