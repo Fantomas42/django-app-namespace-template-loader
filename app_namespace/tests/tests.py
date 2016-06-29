@@ -10,6 +10,7 @@ from django.template.base import Template
 from django.template.engine import Engine
 from django.template import TemplateDoesNotExist
 from django.template.loaders import app_directories
+from django.core.urlresolvers import reverse
 from django.test.utils import override_settings
 
 from app_namespace import Loader
@@ -309,3 +310,52 @@ class ApplicationConfig(AppConfig):
     def test_cached_multiple_extend_empty_namespace(self):
         with self.assertRaises(RuntimeError):
             self.multiple_extend_empty_namespace()
+
+
+class ViewTestCase(TestCase):
+
+    def load_view_twice(self):
+        url = reverse('template-view')
+        r1 = self.client.get(url).content
+        r2 = self.client.get(url).content
+        self.assertEquals(r1, r2)
+
+    @override_settings(
+        TEMPLATES=[
+            {
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'DIRS': [
+                    os.path.abspath(os.path.dirname(__file__)),
+                ],
+                'OPTIONS': {
+                    'loaders': (
+                        'app_namespace.Loader',
+                        'django.template.loaders.filesystem.Loader',
+                        'django.template.loaders.app_directories.Loader',
+                    )
+                }
+            }
+        ]
+    )
+    def test_load_view_twice_app_namespace_first(self):
+        self.load_view_twice()
+
+    @override_settings(
+        TEMPLATES=[
+            {
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'DIRS': [
+                    os.path.abspath(os.path.dirname(__file__)),
+                ],
+                'OPTIONS': {
+                    'loaders': (
+                        'django.template.loaders.filesystem.Loader',
+                        'django.template.loaders.app_directories.Loader',
+                        'app_namespace.Loader',
+                    )
+                }
+            }
+        ]
+    )
+    def test_load_view_twice_app_namespace_last(self):
+        self.load_view_twice()

@@ -89,7 +89,6 @@ class Loader(BaseLoader):
         application.
         """
         if ':' not in template_name:
-            self.reset()
             return
 
         app, template_path = template_name.split(':')
@@ -101,6 +100,7 @@ class Loader(BaseLoader):
                 loader=self)
             return
 
+        self.reset()
         for app in self.app_templates_dirs:
             file_path = self.get_app_template_path(app, template_path)
             if file_path in self._already_used:
