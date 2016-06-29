@@ -4,6 +4,7 @@ import io
 import errno
 from collections import OrderedDict
 
+import django
 from django.apps import apps
 from django.utils._os import upath
 from django.utils._os import safe_join
@@ -37,10 +38,13 @@ class Loader(BaseLoader):
         super(Loader, self).__init__(*args, **kwargs)
         self._already_used = []
 
-    def reset(self):
+    def reset(self, mandatory_on_django_18):
         """
         Empty the cache of paths already used.
         """
+        if django.VERSION[1] == 8:
+            if not mandatory_on_django_18:
+                return
         self._already_used = []
 
     def get_app_template_path(self, app, template_name):
@@ -89,6 +93,7 @@ class Loader(BaseLoader):
         application.
         """
         if ':' not in template_name:
+            self.reset(True)
             return
 
         app, template_path = template_name.split(':')
@@ -100,7 +105,7 @@ class Loader(BaseLoader):
                 loader=self)
             return
 
-        self.reset()
+        self.reset(False)
         for app in self.app_templates_dirs:
             file_path = self.get_app_template_path(app, template_path)
             if file_path in self._already_used:

@@ -4,6 +4,7 @@ import sys
 import shutil
 import tempfile
 
+import django
 from django.test import TestCase
 from django.template.base import Context
 from django.template.base import Template
@@ -358,4 +359,8 @@ class ViewTestCase(TestCase):
         ]
     )
     def test_load_view_twice_app_namespace_last(self):
-        self.load_view_twice()
+        if django.VERSION[1] == 8:
+            with self.assertRaises(TemplateDoesNotExist):
+                self.load_view_twice()
+        else:
+            self.load_view_twice()
