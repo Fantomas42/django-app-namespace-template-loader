@@ -1,8 +1,8 @@
 """Urls for testing app_namespace"""
-from django.conf.urls import url
 from django.conf.urls import include
-from django.views.generic import TemplateView
+from django.conf.urls import url
 from django.contrib import admin
+from django.views.generic import TemplateView
 
 admin.autodiscover()
 

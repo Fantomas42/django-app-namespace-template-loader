@@ -1,13 +1,11 @@
 """Template loader for app-namespace"""
-import os
-import io
 import errno
+import io
+import os
 from collections import OrderedDict
 
 import django
 from django.apps import apps
-from django.utils._os import upath
-from django.utils._os import safe_join
 try:
     from django.template import Origin
 except ImportError:  # pragma: no cover
@@ -16,8 +14,10 @@ except ImportError:  # pragma: no cover
             for k, v in kwargs.items():
                 setattr(self, k, v)
 from django.template import TemplateDoesNotExist
-from django.utils.functional import cached_property
 from django.template.loaders.base import Loader as BaseLoader
+from django.utils._os import safe_join
+from django.utils._os import upath
+from django.utils.functional import cached_property
 
 
 class NamespaceOrigin(Origin):

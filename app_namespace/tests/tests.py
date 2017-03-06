@@ -1,20 +1,20 @@
 """Tests for app_namespace"""
 import os
-import sys
 import shutil
+import sys
 import tempfile
 
+from app_namespace import Loader
+
 import django
-from django.test import TestCase
+from django.core.urlresolvers import reverse
+from django.template import TemplateDoesNotExist
 from django.template.base import Context
 from django.template.base import Template
 from django.template.engine import Engine
-from django.template import TemplateDoesNotExist
 from django.template.loaders import app_directories
-from django.core.urlresolvers import reverse
+from django.test import TestCase
 from django.test.utils import override_settings
-
-from app_namespace import Loader
 
 
 class LoaderTestCase(TestCase):
