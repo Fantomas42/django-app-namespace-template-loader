@@ -63,23 +63,23 @@ templates but with different features.
 Example of multiple empty namespaces: ::
 
     $ cat my-project/application/templates/application/template.html
-    {% block content%}
+    {% block content %}
     <p>Application</p>
-    {% endblock content%}
+    {% endblock content %}
 
     $ cat my-project/application_extension/templates/application/template.html
     {% extends ":application/template.html" %}
-    {% block content%}
+    {% block content %}
     {{ block.super }}
     <p>Application extension</p>
-    {% endblock content%}
+    {% endblock content %}
 
     $ cat my-project/templates/application/template.html
     {% extends ":application/template.html" %}
-    {% block content%}
+    {% block content %}
     {{ block.super }}
     <p>Application project</p>
-    {% endblock content%}
+    {% endblock content %}
 
 Will render: ::
 
